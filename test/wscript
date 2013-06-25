@@ -1,0 +1,77 @@
+#!/bin/env python
+import sys,os,re
+from waflib import Logs
+SUBDIRS=['Text','Sniffer']
+
+def options(ctx):
+	ctx.add_option('--compact',dest='compact',
+		           help='Show compacted test output',
+		           action='store_true', default=False)
+
+def configure(ctx):
+	pass
+
+def build(ctx):
+	lib=[]
+	#ctx.options.all_tests = True
+	features=['cxx','cxxprogram']
+	if ctx.cmd in ['check']:
+		features.append('test')
+	if ctx.env.DEST_OS in ['linux']:
+		lib.append('pthread')
+	ctx.stlib(name='gtest',
+		      target='../gtest',
+		      source='gtest-all.cc',
+		      includes='.',
+		      export_includes='.')
+
+	for subdir in SUBDIRS:
+		name='%sTests'%subdir
+		src=ctx.sources(path=os.path.join(ctx.path.abspath(),subdir))
+		src.append('gtest_main.cc')
+		ctx.program(name=name, target='../%s'%name, source=src,
+			        use=['gtest','timedtext'], lib=lib, features=features)
+
+	ptn = re.compile('(?P<prefix>\[\s*(?P<type>\w+|=+|-+)\s*\])(?P<info>\s+.*)')
+	def colourify(ctx):
+		lst = getattr(ctx, 'utest_results', [])
+		_cols = {
+			'==========' : 'GREEN',
+			'----------': 'GREEN',
+			'RUN' : 'GREEN',
+			'OK' : 'GREEN',
+			'PASSED' : 'GREEN',
+			'FAILED' : 'RED'
+		}
+		if lst:
+			show = True if ctx.options.compact is False else False
+			passed=0
+			failed=0
+			if not show: Logs.pprint('GREEN',"\n[==========] ", label="Running %d tests" % len(lst))
+			for (f, code, out, err) in lst:
+				col=''
+				if code==0:
+					st = '[  PASSED  ] '
+					col='GREEN'
+					passed+=1
+				else:
+					st='[  FAILED  ] '
+					col='RED'
+					failed+=1
+				if show:
+					Logs.pprint( 'CYAN' , '\nRunning tests from: %s' % f )
+					for l in out.splitlines(False):
+						m = re.match(ptn, l)
+						if m:
+							md = m.groupdict()
+							Logs.pprint(_cols.get( md['type'], 'NORMAL'),
+										md['prefix'], label=md['info'])
+						elif not l.startswith('Running'):
+							Logs.pprint('NORMAL', l)
+				else:
+					Logs.pprint(col,st, label=os.path.basename(f))
+			if failed==0: Logs.pprint('GREEN',"[==========] ", label="Passed all tests")
+			else: Logs.pprint('GREEN',"[==========] ", label="Passed %d/%d tests" %(passed, passed+failed))
+			st=0 if failed==0 else 1
+			sys.exit(st)
+	ctx.add_post_fun(colourify)

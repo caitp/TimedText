@@ -1,0 +1,49 @@
+#!/bin/sh
+startdir=$PWD
+topsrcdir=$(dirname $0)
+topblddir=$PWD
+
+cd $topsrcdir
+topsrcdir=$PWD
+cd $startdir
+
+#If we're not doing a VPATH build, then put things in 'build' dir.
+if [ "$topblddir" = "$topsrcdir" ]; then
+  topblddir="$topsrcdir/build"
+fi
+
+cd $topsrcdir
+./waf --out=$topblddir configure "$@"
+cd $startdir
+
+#Write Makefile:
+cat > $startdir/Makefile <<DELIM
+topsrcdir="$topsrcdir"
+topblddir="$topblddir"
+
+all: timedtext check
+
+timedtext:
+	cd $topsrcdir && ./waf --out=$topblddir build
+
+check:
+	cd $topsrcdir && ./waf --out=$topblddir check
+
+check-all:
+	cd $topsrcdir && ./waf --out=$topblddir check --alltests
+
+check-compact:
+	cd $topsrcdir && ./waf --out=$topblddir check --compact
+
+check-all-compact:
+	cd $topsrcdir && ./waf --out=$topblddir check --alltests --compact
+
+install:
+	cd $topsrcdir && ./waf --out=$topblddir install
+
+uninstall:
+	cd $topsrcdir && ./waf --out=$topblddir uninstall
+
+clean:
+	cd $topsrcdir && ./waf --out=$topblddir clean
+DELIM

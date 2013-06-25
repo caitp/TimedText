@@ -1,0 +1,26 @@
+#!/bin/env python
+
+def options(ctx):
+	pass
+
+def configure(ctx):
+	pass
+
+def build(ctx):
+	defines=[]
+	includes=["../include"]
+	src=ctx.sources(skip='expat')
+	#if ctx.env.with_expat:
+	#	includes.append('%s/lib'%ctx.env.with_expat)
+	#	lib=['expat']
+	#else:
+	includes.append('expat')
+	src.extend(['expat/xmlrole.c','expat/xmltok.c','expat/xmlparse.c'])
+	defines.extend(['HAVE_MEMMOVE=1'])
+
+	ctx.stlib(name="timedtext",
+		      target="../timedtext",
+		      source=src,
+		      includes=includes,
+		      defines=defines,
+		      export_includes="../include")
