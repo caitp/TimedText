@@ -1,0 +1,101 @@
+//
+// Copyright (c) 2014 Caitlin Potter and Contributors
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//  * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//  * Redistributions in binary form must reproduce the above copyright
+// notice, this list of conditions and the following disclaimer in the
+// documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+
+#include <TimedText/SynchronousBuffer.h>
+#include <cstring>
+
+namespace TimedText
+{
+
+SynchronousBuffer::SynchronousBuffer()
+  : Buffer(Buffer::isSynchronous),
+    final(false)
+{
+}
+
+SynchronousBuffer::~SynchronousBuffer()
+{
+}
+
+void
+SynchronousBuffer::lock()
+{
+  // NOOP
+}
+
+void
+SynchronousBuffer::unlock()
+{
+  // NOOP
+}
+
+bool
+SynchronousBuffer::eof() const
+{
+  return i >= buffer.size() && final;
+}
+
+bool
+SynchronousBuffer::seek(int n, bool abs)
+{
+  if(!abs) {
+    n += i;
+  }
+  if(n < 0 || n >= buffer.size())
+    return false;
+  i = n;
+  return true;
+}
+
+int
+SynchronousBuffer::pos() const
+{
+  return i;
+}
+
+void
+SynchronousBuffer::discard(int bytes)
+{
+  Buffer::discard(bytes);
+}
+
+void
+SynchronousBuffer::refill(const char utf8[], int count)
+{
+  if(count < 0)
+    count = ::strlen(utf8);
+  buffer.append(utf8,count);
+}
+
+void
+SynchronousBuffer::refill(const char utf8[], int count, bool final)
+{
+  refill(utf8,count);
+  this->final = final;
+}
+
+} // TimedText
