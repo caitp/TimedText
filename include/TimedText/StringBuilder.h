@@ -49,6 +49,7 @@ namespace TimedText
 class StringBuilder
 {
 public:
+  StringBuilder();
   StringBuilder(int capacity, bool &result);
   ~StringBuilder();
 
@@ -56,11 +57,12 @@ public:
   int length() const;
   int size() const;
   int capacity() const;
+  const char *text() const;
   void clear();
 
-  int indexOf(const char *text, int len=-1) const;
-  int indexOf(const String &str) const {
-    return indexOf(str.text(), str.length());
+  int indexOf(const char *text, int len=-1, int from = 0) const;
+  int indexOf(const String &str, int from = 0) const {
+    return indexOf(str.text(), str.length(), from);
   }
 
   bool reserve(int capacity);
@@ -71,6 +73,8 @@ public:
   }
   template <size_t N>
   inline bool append(const char (&arr)[N]) {
+    if(N > 0 && arr[N-1] == '\0')
+      return append(arr, N-1);
     return append(arr, N);
   }
   bool prepend(unsigned long ucs4);
@@ -103,11 +107,16 @@ public:
 private:
   struct Data
   {
+    static Data *allocate(Data *old, int size);
     int alloc;
     int length;
     char text[1];
   };
   Data *d;
+  bool reallocData(int alloc, bool grow = false);
+  void freeData();
+
+  static Data empty;
 };
 
 }

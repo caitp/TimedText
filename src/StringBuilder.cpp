@@ -26,66 +26,129 @@
 //
 
 #include <TimedText/StringBuilder.h>
+#include "Utility.h"
+#include <cstdlib>
 
 namespace TimedText
 {
-#if 0
-StringBuilder::StringBuilder(int capacity, bool &result)
-{
 
+StringBuilder::Data StringBuilder::empty = { 0, 0, { '\0' } };
+
+StringBuilder::StringBuilder()
+{
+  d = &empty;
+}
+
+StringBuilder::StringBuilder(int capacity, bool &result)
+  : d(&empty)
+{
+  result = reallocData(capacity, true);
 }
 
 StringBuilder::~StringBuilder()
 {
+  freeData();
+}
 
+bool
+StringBuilder::reallocData(int alloc, bool grow)
+{
+  if(grow)
+    alloc = allocMore(alloc,sizeof(Data));
+  d = Data::allocate(!d || d==&empty ? 0 : d, alloc);
+  if(!d) {
+    d = &empty;
+    return false;
+  }
+  return true;
+}
+
+StringBuilder::Data *
+StringBuilder::Data::allocate(Data *old, int alloc)
+{
+  if(old && old != &empty) {
+    // Reallocate existing data
+    Data *x = static_cast<Data *>(::realloc(x, sizeof(Data) + alloc));
+    if(x) {
+      x->alloc = alloc;
+    }
+    return x;
+  } else {
+    // Allocate new data
+    Data *x = static_cast<Data *>(::malloc(sizeof(Data) + alloc));
+    if(x) {
+      x->alloc = alloc;
+      x->length = 0;
+      x->text[0] = '\0';
+    }
+    return x;
+  }
+}
+
+void
+StringBuilder::freeData()
+{
+  Data *x = d;
+  d = &empty;
+  if(x && x != &empty)
+    ::free(x);
 }
 
 int
-StringBuilder::indexOf(const char *text, int len) const
+StringBuilder::indexOf(const char *utf8, int len, int from) const
 {
-  if(!text)
+  if(!utf8)
     return -1;
   if(len < 0) {
-    len = strlen(text);
+    len = strlen(utf8);
     if(!len)
       return -1;
   }
-  return String::findString(text(), length(), text, len);
+
+  return String::findString(text(), length(), from, utf8, len);
 }
 
 bool StringBuilder::toString(String &result) const
 {
-
+  result = String(d->text,d->length);
+  return result.size()==size();
 }
 
 int
 StringBuilder::length() const
 {
-
+  return d->length;
 }
 
 int
 StringBuilder::size() const
 {
-
+  return d->length;
 }
 
 int
 StringBuilder::capacity() const
 {
+  return d->alloc;
+}
 
+const char *
+StringBuilder::text() const
+{
+  return d->text;
 }
 
 void
 StringBuilder::clear()
 {
-
+  d->length = 0;
+  d->text[0] = '\0';
 }
 
 bool
 StringBuilder::reserve(int capacity)
 {
-
+  return reallocData(capacity);
 }
 
 bool
@@ -94,13 +157,27 @@ StringBuilder::append(unsigned long ucs4)
   char is[8]; 
   int il;
   Unicode::toUtf8(ucs4, is, il);
-  return append(idx, is, il);
+  return append(is, il);
 }
 
 bool
-StringBuilder::append(const char *text, int len)
+StringBuilder::append(const char *utf8, int len)
 {
+  if(!utf8)
+    return true;
+  if(len < 0)
+    len = ::strlen(utf8);
+  if(len == 0)
+    return true;
+  int vlen = Unicode::utf8Length(utf8, len);
+  if(length() + vlen >= capacity() && !reallocData(length() + vlen, true))
+    return false;
 
+  Unicode::toValidUtf8(d->text + d->length, capacity(), vlen, utf8, len);
+  d->length += vlen;
+  d->text[d->length] = '\0';
+  // Should we return false if the UTF8 is not valid?
+  return true;
 }
   
 bool
@@ -109,13 +186,13 @@ StringBuilder::prepend(unsigned long ucs4)
   char is[8]; 
   int il;
   Unicode::toUtf8(ucs4, is, il);
-  return prepend(idx, is, il);
+  return prepend(is, il);
 }
 
 bool
 StringBuilder::prepend(const char *text, int len)
 {
-
+  return false;
 }
   
 bool
@@ -130,14 +207,14 @@ StringBuilder::insert(int idx, unsigned long ucs4)
 bool
 StringBuilder::insert(int idx, const char *text, int len)
 {
-
+  return false;
 }
 
 bool
 StringBuilder::replaceAll(const char *search, int len,
                           const char *repl, int rlen)
 {
-  while(strstr())
+  return false;
 }
 
 bool
@@ -170,7 +247,5 @@ StringBuilder::replaceAll(unsigned long search,
   Unicode::toUtf8(replace, ur, rl);
   return replaceAll(us, sl, ur, rl);
 }
-
-#endif
 
 }
