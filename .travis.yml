@@ -1,14 +1,12 @@
 language: cpp
 
+compiler:
+  - gcc
+  - clang
+
 env:
-  - BUILD_TYPE="G++     CheckAllOpt" BUILD="make check-all" \
-    CC="gcc" CXX="g++" CFLAGS="-O3" CXXFLAGS="-O3" ANALYSIS="" ANALYSIS_ARGS=""
-  - BUILD_TYPE="G++     CheckAllDebug" BUILD="make check-all" \
-    CC="gcc" CXX="g++" CFLAGS="-g -O0" CXXFLAGS="-g -O0" ANALYSIS="" ANALYSIS_ARGS=""
-  - BUILD_TYPE="clang++ CheckAllOpt" BUILD="make check-all" \
-    CC="clang" CXX="clang++" CFLAGS="-O3" CXXFLAGS="-O3" ANALYSIS="" ANALYSIS_ARGS="" PACKAGES="clang"
-  - BUILD_TYPE="clang++ CheckAllDebug" BUILD="make check-all" \
-    CC="clang" CXX="clang++" CFLAGS="-g -O0" CXXFLAGS="-g -O0" ANALYSIS="" ANALYSIS_ARGS="" PACKAGES="clang"
+  - BUILD_TYPE="CheckAllOpt" BUILD="make check-all" CFLAGS="-O3" CXXFLAGS="-O3" ANALYSIS="" ANALYSIS_ARGS=""
+  - BUILD_TYPE="CheckAllDebug" BUILD="make check-all" CFLAGS="-g -O0" CXXFLAGS="-g -O0" ANALYSIS="" ANALYSIS_ARGS=""
   #- BUILD_TYPE="clang++ ScanBuild" BUILD="make check-all" CC="clang" CXX="clang++" CFLAGS="-g -O0" CXXFLAGS="-O3" ANALYSIS="scan-build" ANALYSIS_ARGS="-v -v -k" PACKAGES="clang"
 
 before_install:
@@ -16,8 +14,6 @@ before_install:
   - '[[ -z "${PACKAGES}" ]] || sudo apt-get -qq install ${PACKAGES}'
 
 script:
-  - which ${CXX}
-  - which ${CC}
   - ${ANALYSIS} ./configure
   - ${ANALYSIS} ${ANALYSIS_ARGS} ${BUILD}
 
