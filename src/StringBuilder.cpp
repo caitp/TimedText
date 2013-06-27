@@ -69,9 +69,8 @@ StringBuilder::Data::allocate(Data *old, int alloc)
   if(old && old != &empty) {
     // Reallocate existing data
     Data *x = static_cast<Data *>(::realloc(x, sizeof(Data) + alloc));
-    if(x) {
+    if(x)
       x->alloc = alloc;
-    }
     return x;
   } else {
     // Allocate new data

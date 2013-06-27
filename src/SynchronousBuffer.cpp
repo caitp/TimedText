@@ -32,8 +32,7 @@ namespace TimedText
 {
 
 SynchronousBuffer::SynchronousBuffer()
-  : Buffer(Buffer::isSynchronous),
-    final(false)
+  : Buffer(Buffer::Synchronous)
 {
 }
 
@@ -44,58 +43,11 @@ SynchronousBuffer::~SynchronousBuffer()
 void
 SynchronousBuffer::lock()
 {
-  // NOOP
 }
 
 void
 SynchronousBuffer::unlock()
 {
-  // NOOP
-}
-
-bool
-SynchronousBuffer::eof() const
-{
-  return i >= buffer.size() && final;
-}
-
-bool
-SynchronousBuffer::seek(int n, bool abs)
-{
-  if(!abs) {
-    n += i;
-  }
-  if(n < 0 || n >= buffer.size())
-    return false;
-  i = n;
-  return true;
-}
-
-int
-SynchronousBuffer::pos() const
-{
-  return i;
-}
-
-void
-SynchronousBuffer::discard(int bytes)
-{
-  Buffer::discard(bytes);
-}
-
-void
-SynchronousBuffer::refill(const char utf8[], int count)
-{
-  if(count < 0)
-    count = ::strlen(utf8);
-  buffer.append(utf8,count);
-}
-
-void
-SynchronousBuffer::refill(const char utf8[], int count, bool final)
-{
-  refill(utf8,count);
-  this->final = final;
 }
 
 } // TimedText

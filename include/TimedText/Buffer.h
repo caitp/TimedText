@@ -38,28 +38,62 @@ class Buffer
 public:
   enum Flags
   {
-    isSynchronous = 0,
-    isAsynchronous = 1,
+    Synchronous = 0,
+    Asynchronous = 1,
+    SynchronousMask = (Synchronous|Asynchronous),
   };
   Buffer(Flags flags);
   ~Buffer();
 
-  // Locking operations
+  inline bool isSynchronous() const
+  {
+    return (flags & SynchronousMask) == Synchronous;
+  }
+
+  inline bool isAsynchronous() const
+  {
+    return (flags & SynchronousMask) == Asynchronous;
+  }
+
+  // Locking operations (These should be blocking, with high priority)
   virtual void lock() = 0;
   virtual void unlock() = 0;
 
-	virtual bool eof() const = 0;
+	inline bool eof() const
+  {
+    return (i >= buffer.size() && final);
+  }
 
-  virtual bool seek(int pos, bool abs = false) = 0;
+  inline int pos() const
+  {
+    return i;
+  }
 
-  virtual int pos() const = 0;
+  const char *curr() const;
+
+  // Seek is not threadsafe and does not lock.
+  // Only use if certain of unique ownership.
+  bool seek(int pos, bool abs = false);
 
   // Pull bytes from front of buffer, to conserve memory
-  virtual void discard(int bytes) { seek(bytes); };
-  void discard() { discard(pos()); }
+  //
+  // performDiscard should not use locking operations, as
+  // these are taken care of by the wrapping 'discard'
+  // routine
+  virtual void performDiscard(int bytes);
+  void discard(int bytes);
+  void discard();
 
-  // Load new data
-  virtual void refill(const char utf8[], int count) = 0;
+  // Load new UTF8-encoded data into buffer.
+  bool refill(const char utf8[], int count, bool final = false);
+  template<size_t N>
+  inline bool refill(const char (&utf8)[N], bool final = false)
+  {
+    if(N > 0 && utf8[N-1] == '\0')
+      return refill(utf8, N-1, final);
+    return refill(utf8, N, final);
+  }
+  inline bool finish() { return refill("", 0, true); }
 
   // Return 'true' if line is read,
   bool getline(String &result) const;
@@ -69,6 +103,8 @@ public:
 
 protected:
   Flags flags;
+  bool final;
+  int i;
   StringBuilder buffer;
 };
 

@@ -43,24 +43,6 @@ public:
   // threads
   void lock();
   void unlock();
-
-	bool eof() const;
-
-  bool seek(int pos, bool abs = false);
-
-  int pos() const;
-
-  // Pull bytes from front of buffer, to conserve memory
-  virtual void discard(int bytes);
-
-  void refill(const char utf8[], int count);
-
-  // Load new data
-  virtual void refill(const char utf8[], int count, bool final);
-  
-protected:
-  bool final;
-  int i;
 };
 
 } // TimedText

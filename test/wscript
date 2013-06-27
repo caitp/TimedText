@@ -27,7 +27,7 @@
 
 import sys,os,re
 from waflib import Logs
-SUBDIRS=['Text','Sniffer']
+SUBDIRS=['Text','Sniffer','Buffer']
 
 def options(ctx):
 	ctx.add_option('--compact',dest='compact',
