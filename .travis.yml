@@ -12,8 +12,8 @@ before_install:
   - '[[ -z "${PACKAGES}" ]] || sudo apt-get -qq install ${PACKAGES}'
 
 script:
-  - "${ANALYSIS} ./configure"
-  - "${ANALYSIS} ${ANALYSIS_ARGS} ${BUILD}"
+  - ${ANALYSIS} ./configure
+  - ${ANALYSIS} ${ANALYSIS_ARGS} ${BUILD}
 
 notifications:
   irc: "irc.freenode.net#seneca-webvtt"
