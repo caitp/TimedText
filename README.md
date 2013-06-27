@@ -1,6 +1,10 @@
 TimedText
 =========
 
+### Build Status [![Build Status](https://travis-ci.org/caitp/TimedText.png?branch=dev)](https://travis-ci.org/caitp/TimedText)
+
+### About
+
 This project is intended as a replacement for the [Mozilla WebVTT](https://github.com/mozilla/webvtt/)
 library.
 
