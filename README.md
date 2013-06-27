@@ -1,7 +1,7 @@
 TimedText
 =========
 
-### Build Status [![Build Status](https://travis-ci.org/caitp/TimedText.png?branch=dev)](https://travis-ci.org/caitp/TimedText)
+### Build Status [![Build Status](https://travis-ci.org/caitp/TimedText.png?branch=master)](https://travis-ci.org/caitp/TimedText)
 
 ### About
 
