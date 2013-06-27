@@ -25,36 +25,29 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef __TimedText_IncrementalBuffer__
-#define __TimedText_IncrementalBuffer__
-
-#include <TimedText/String.h>
+#include <TimedText/SynchronousBuffer.h>
+#include <cstring>
 
 namespace TimedText
 {
 
-// Forward declare base IncrementalBufferDetail.
-class IncrementalBufferDetail;
-
-// The IncrementalBuffer is a type of buffer designed to
-// support asynchronous parsing.
-class IncrementalBuffer
+SynchronousBuffer::SynchronousBuffer()
+  : Buffer(Buffer::Synchronous)
 {
-public:
-  IncrementalBuffer(IncrementalBufferDetail *d);
-  ~IncrementalBuffer();
+}
 
-	bool eof() const;
-  String getline() const;
-  int next();
-  int read(char buffer[], int maximum);
-  void discard(int bytes);
-  void bump();
+SynchronousBuffer::~SynchronousBuffer()
+{
+}
 
-private:
-  IncrementalBufferDetail *d_ptr;
-};
+void
+SynchronousBuffer::lock()
+{
+}
+
+void
+SynchronousBuffer::unlock()
+{
+}
 
 } // TimedText
-
-#endif // __TimedText_IncrementalBuffer__

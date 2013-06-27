@@ -62,23 +62,23 @@ public:
 		return d->text;
 	}
 
-  int indexOf(const char *text, int len=-1) const;
-  inline int indexOf(const String &str) const {
-    return indexOf(str.text(), str.length());
+  int indexOf(const char *text, int len=-1, int from = 0) const;
+  inline int indexOf(const String &str, int from = 0) const {
+    return indexOf(str.text(), str.length(), from);
   }
 
   // Return true if string contains 'text'
-  bool contains(const char *text, int len=-1) const;
-  inline bool contains(const String &other) const {
-    return contains(other.text(),other.length());
+  bool contains(const char *text, int len=-1, int from = 0) const;
+  inline bool contains(const String &other, int from = 0) const {
+    return contains(other.text(),other.length(), from);
   }
   template <size_t N>
-  inline bool contains(const char (&arr)[N]) {
+  inline bool contains(const char (&arr)[N], int from = 0) {
     if(N>0 && arr[N-1]=='\0')
-      return contains(arr,N-1);
-    return contains(arr, N);
+      return contains(arr,N-1,from);
+    return contains(arr, N, from);
   }
-  bool contains(unsigned long ucs4) const;
+  bool contains(unsigned long ucs4, int from = 0) const;
 
   // Return true if string starts with 'text'
   bool startsWith(const char *text, int len=-1) const;

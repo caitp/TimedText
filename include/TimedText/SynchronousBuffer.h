@@ -25,37 +25,26 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef __TimedText_IncrementalBuffer_Detail__
-#define __TimedText_IncrementalBuffer_Detail__
+#ifndef __TimedText_SynchronousBuffer__
+#define __TimedText_SynchronousBuffer__
 
-#include <TimedText/IncrementalBuffer.h>
+#include <TimedText/Buffer.h>
 
 namespace TimedText
 {
 
-// This object is shared between the thread controlling the
-// parser, and the parser's thread itself (they should not be
-// the same thread).
-//
-// Details regarding locking/unlocking of buffers is left up to
-// the implementation.
-class IncrementalBufferDetail
+class SynchronousBuffer : public Buffer
 {
 public:
-  virtual ~Detail() = 0;
+  SynchronousBuffer();
+  ~SynchronousBuffer();
 
-  // Return true if the end of the document has been reached.
-  // Otherwise return false
-  virtual bool eof() const = 0;
-
-  // Discard bytes from the front of the buffer
-  virtual void discard(int bytes) = 0;
-
-  // Read up to 'maximum' bytes from the front of the buffer
-  // do not discard them.
-  virtual int read(char buffer[], int maximum) = 0;
+  // Locking is unneeded, as the buffer is not shared between
+  // threads
+  void lock();
+  void unlock();
 };
 
 } // TimedText
 
-#endif // __TimedText_IncrementalBuffer_Detail__
+#endif // __TimedText_SynchronousBuffer__
