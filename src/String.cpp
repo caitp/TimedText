@@ -60,33 +60,44 @@ String::String(const char *utf8, int len)
   }
 }
 
+String &
+String::operator=(const String &str)
+{
+  Data *x = d;
+  d = str.d;
+  ++d->ref;
+  if(!--x->ref)
+    ::free(x);
+  return *this;
+}
+
 int
-String::indexOf(const char *find, int len) const
+String::indexOf(const char *find, int len, int from) const
 {
   if(!find)
     return -1;
   if(len < 0)
     len = ::strlen(find);
-  return findString(text(), length(), 0, find, len);
+  return findString(text(), length(), from, find, len);
 }
 
 bool
-String::contains(const char *find, int len) const
+String::contains(const char *find, int len, int from) const
 {
   if(!find)
     return -1;
   if(len < 0)
     len = ::strlen(find);
-  return findString(text(), length(), 0, find, len) >= 0;
+  return findString(text(), length(), from, find, len) >= 0;
 }
 
 bool
-String::contains(unsigned long ucs4) const
+String::contains(unsigned long ucs4, int from) const
 {
   char sw[8];
   int sl;
   Unicode::toUtf8(ucs4, sw, sl);
-  return contains(sw,sl);
+  return contains(sw, sl, from);
 }
 
 bool

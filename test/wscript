@@ -27,7 +27,7 @@
 
 import sys,os,re
 from waflib import Logs
-SUBDIRS=['Text','Sniffer']
+SUBDIRS=['Text','Sniffer','Buffer']
 
 def options(ctx):
 	ctx.add_option('--compact',dest='compact',
@@ -56,7 +56,8 @@ def build(ctx):
 		src=ctx.sources(path=os.path.join(ctx.path.abspath(),subdir))
 		src.append('gtest_main.cc')
 		ctx.program(name=name, target='../%s'%name, source=src,
-			        use=['gtest','timedtext'], lib=lib, features=features)
+			        use=['gtest','timedtext'], lib=lib, features=features,
+			        defines=['private=public','protected=public'])
 
 	ptn = re.compile('(?P<prefix>\[\s*(?P<type>\w+|=+|-+)\s*\])(?P<info>\s+.*)')
 	def colourify(ctx):
