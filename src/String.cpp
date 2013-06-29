@@ -77,6 +77,12 @@ String::operator=(const String &str)
   return *this;
 }
 
+String &
+String::operator+=(const String &str)
+{
+  Data *x = static_cast<Data *>(::malloc(sizeof(Data) + ))
+}
+
 int
 String::indexOf(const char *find, int len, int from) const
 {

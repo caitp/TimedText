@@ -41,10 +41,12 @@ class StringBuilder;
 class String
 {
 public:
+  String() : d(&sharedEmpty) { ++d->ref; }
 	explicit String(const char *utf8, int len=-1);
   ~String();
 	String(const String &str);
 	String &operator=(const String &str);
+  String &operator+=(const String &str);
 
 	// Returns true if the string is empty or NULL.
 	inline bool isEmpty() const {

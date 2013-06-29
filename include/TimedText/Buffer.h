@@ -101,6 +101,35 @@ public:
   // Read text as UTF-8, without seeking
   int read(char buffer[], int maximum);
 
+  // Read char and increase position by one byte
+  // Does not lock! Be sure to own buffer before
+  // calling.
+  char getc()
+  {
+    if(i>=buffer.size())
+      return '\0';
+    return buffer[i++];
+  }
+
+  bool collectWordAsync(String &result, int *len);
+  bool collectDigitsAsync(String &result, int *len);
+  bool collectWordSync(String &result, int *len);
+  bool collectDigitsSync(String &result, int *len);
+
+  inline bool collectWord(String &result, int *len = 0)
+  {
+    if(isSynchronous())
+      return collectWordSync(result, len);
+    return collectWordAsync(result, len);
+  }
+  
+  inline bool collectDigits(String &result, int *len = 0)
+  {
+    if(isSynchronous())
+      return collectDigitsSync(result, len);
+    return collectDigitsAsync(result, len);
+  }
+
 protected:
   Flags flags;
   bool final;

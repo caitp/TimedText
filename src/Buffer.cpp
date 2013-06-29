@@ -83,4 +83,52 @@ Buffer::read(char out[], int max)
   return ret;
 }
 
+bool
+Buffer::getc(char &out)
+{
+  if(i >= buffer.size()) {
+    out = '\0';
+    return false;
+  }
+  out = buffer.text()[i++];
+  return true;
+}
+
+bool
+Buffer::collectWordAsync(String &result, int *len)
+{
+}
+
+bool
+Buffer::collectDigitsAsync(String &result, int *len)
+{
+  if(eof())
+    return false;
+  // This is way generous for a series of digits.
+  // StringBuilder might be a little bit expensive to
+  // use for this
+  char tmp[0x40] = "";
+  int n = 0;
+  char c;
+  lock();
+  while(n < sizeof(tmp) && getc(c) && isAsciiDigit(c)) {
+    tmp[n++] = c;
+  }
+  unlock();
+  bool ret;
+  result += String(tmp,n);
+  if(len)
+    *len = n;
+}
+
+bool
+Buffer::collectWordSync(String &result, int *len)
+{
+}
+
+bool
+Buffer::collectDigitsSync(String &result, int *len)
+{
+}
+
 } // TimedText

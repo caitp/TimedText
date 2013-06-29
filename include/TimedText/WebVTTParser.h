@@ -28,14 +28,43 @@
 #ifndef __TimedText_WebVTTParser__
 #define __TimedText_WebVTTParser__
 
+#include <TimedText/Buffer.h>
+
 namespace TimedText
 {
 
 class WebVTTParser
 {
 public:
-  WebVTTParser(IncrementalBuffer &buffer);
-  
+  enum ParseState {
+    Initial,
+    Header,
+
+    Id,
+    TimingsAndSettings,
+    CueText,
+    BadCue
+  };
+  WebVTTParser(Buffer &buffer);
+  ~WebVTTParser();
+
+  static inline bool isHtml5Space(char c)
+  {
+    // WebVTT uses HTML5 space characters (U+0020, U+0009, U+000A, U+000D,
+    // and U+000C)
+    return c == ' ' || c == '\t' || c == '\n' || c == '\f' || c == '\r';
+  }
+
+  static inline bool isValidSignatureDelimiter(char c)
+  {
+    // Currently, the 'WEBVTT' signature must be followed by either a
+    // SPACE (U+0020), TAB (U+0009), CARRIAGE RETURN (U+000D) or LINE FEED
+    // (U+000A), but not a FORM FEED
+    return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+  }
+
+private:
+  Buffer *buffer;
 };
 
 } // TimedText
