@@ -56,4 +56,8 @@ TEST(SynchronousWebVTTParser, ParseHeader)
   testParseHeader("\xEF\xBB\xBFWEBVTT ", true, true, WebVTTParser::Unfinished);
   testParseHeader("\xEF\xBB\xBFWEBVTT\t", true, true, WebVTTParser::Unfinished);
   testParseHeader("\xEF\xBB\xBFWEBVTTT", true, false, WebVTTParser::Aborted);
+  testParseHeader("\xBB\xBFWEBVTT", true, false, WebVTTParser::Aborted);
+  testParseHeader("\xBFWEBVTT", true, false, WebVTTParser::Aborted);
+  testParseHeader("\xEF\xBBWEBVTT", true, false, WebVTTParser::Aborted);
+  testParseHeader("\xEF\xBB\xBFPEBVTT", true, false, WebVTTParser::Aborted);
 }
