@@ -23,6 +23,8 @@
 #include "xmlrole.h"
 #include "ascii.h"
 
+#ifndef __clang_analyzer__
+
 /* Doesn't check:
 
  that ,| are not mixed in a model group
@@ -1334,3 +1336,5 @@ XmlPrologStateInitExternalEntity(PROLOG_STATE *state)
 }
 
 #endif /* XML_DTD */
+
+#endif /* __clang_analyzer__ */

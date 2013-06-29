@@ -23,6 +23,8 @@
 #include "xmltok.h"
 #include "nametab.h"
 
+#ifndef __clang_analyzer__
+
 #ifdef XML_DTD
 #define IGNORE_SECTION_TOK_VTABLE , PREFIX(ignoreSectionTok)
 #else
@@ -1649,3 +1651,5 @@ XmlInitUnknownEncodingNS(void *mem,
 }
 
 #endif /* XML_NS */
+
+#endif /* __clang_analyzer__ */
