@@ -84,7 +84,7 @@ Buffer::read(char out[], int max)
 }
 
 bool
-Buffer::getc(char &out)
+Buffer::next(char &out)
 {
   if(i >= buffer.size()) {
     out = '\0';
@@ -95,12 +95,46 @@ Buffer::getc(char &out)
 }
 
 bool
-Buffer::collectWordAsync(String &result, int *len)
+Buffer::collectWord(String &result, int *len)
 {
+  if(eof())
+    return false;
+  // This is a fairly generous buffer, which well
+  // exceeds the requirements of WebVTT
+  char tmp[0x80] = "";
+  int n = 0;
+  char c;
+  bool finished = false;
+
+retry:
+  lock();
+  while(n < sizeof(tmp) && next(c)) {
+    if(!Char::isHtml5Space(c))
+      tmp[n++] = c;
+    else {
+      --i;
+      finished = true;
+      break;
+    }
+  }
+  unlock();
+
+  if(n >= sizeof(tmp) || eof())
+    finished = true;
+
+  if(!finished && isAsynchronous()) {
+    sleep();
+    goto retry;
+  }
+
+  result += String(tmp,n);
+  if(len)
+    *len = n;
+  return finished;
 }
 
 bool
-Buffer::collectDigitsAsync(String &result, int *len)
+Buffer::collectDigits(String &result, int *len)
 {
   if(eof())
     return false;
@@ -110,25 +144,68 @@ Buffer::collectDigitsAsync(String &result, int *len)
   char tmp[0x40] = "";
   int n = 0;
   char c;
+  bool finished = false;
+
+retry:
   lock();
-  while(n < sizeof(tmp) && getc(c) && isAsciiDigit(c)) {
-    tmp[n++] = c;
+  while(n < sizeof(tmp) && next(c)) {
+    if(Char::isAsciiDigit(c))
+      tmp[n++] = c;
+    else {
+      --i;
+      finished = true;
+      break;
+    }
   }
   unlock();
-  bool ret;
+
+  if(n >= sizeof(tmp) || eof())
+    finished = true;
+
+  if(!finished && isAsynchronous()) {
+    sleep();
+    goto retry;
+  }
+
   result += String(tmp,n);
   if(len)
     *len = n;
+  return finished;
 }
 
 bool
-Buffer::collectWordSync(String &result, int *len)
+Buffer::skipWhitespace(int *len)
 {
-}
+  if(eof())
+    return false;
+  int n = 0;
+  char c;
+  bool finished = false;
 
-bool
-Buffer::collectDigitsSync(String &result, int *len)
-{
+retry:
+  lock();
+  while(next(c)) {
+    if(Char::isHtml5Space(c))
+      ++n;
+    else {
+      --i;
+      finished = true;
+      break;
+    }
+  }
+  unlock();
+
+  if(eof())
+    finished = true;
+
+  if(!finished && isAsynchronous()) {
+    sleep();
+    goto retry;
+  }
+
+  if(len)
+    *len = n;
+  return finished;
 }
 
 } // TimedText

@@ -60,6 +60,13 @@ public:
   const char *text() const;
   void clear();
 
+  char operator[](int i) const
+  {
+    if(i < 0 || i >= size())
+      return '\0';
+    return d->text[i];
+  }
+
   int indexOf(const char *text, int len=-1, int from = 0) const;
   int indexOf(const String &str, int from = 0) const {
     return indexOf(str.text(), str.length(), from);

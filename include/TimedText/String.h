@@ -29,6 +29,7 @@
 #ifndef __TimedText_String__
 #define __TimedText_String__
 
+#include <TimedText/Char.h>
 #include <TimedText/Unicode.h>
 #include <cstring>
 
@@ -64,6 +65,8 @@ public:
 	inline const char *text() const {
 		return d->text;
 	}
+
+  void clear();
 
   int indexOf(const char *text, int len=-1, int from = 0) const;
   inline int indexOf(const String &str, int from = 0) const {
@@ -125,6 +128,8 @@ private:
   static Data sharedEmpty;
   static Data sharedNull;
 };
+
+bool isAsciiDigit(char c);
 
 } // TimedText
 

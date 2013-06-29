@@ -50,8 +50,7 @@ public:
 
   static inline bool isHtml5Space(char c)
   {
-    // WebVTT uses HTML5 space characters (U+0020, U+0009, U+000A, U+000D,
-    // and U+000C)
+
     return c == ' ' || c == '\t' || c == '\n' || c == '\f' || c == '\r';
   }
 

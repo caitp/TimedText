@@ -41,9 +41,15 @@ public:
     Synchronous = 0,
     Asynchronous = 1,
     SynchronousMask = (Synchronous|Asynchronous),
+    Sleeping = 2,
   };
   Buffer(Flags flags);
   ~Buffer();
+
+  inline bool isSleeping() const
+  {
+    return (flags & Sleeping) != 0;
+  }
 
   inline bool isSynchronous() const
   {
@@ -58,6 +64,8 @@ public:
   // Locking operations (These should be blocking, with high priority)
   virtual void lock() = 0;
   virtual void unlock() = 0;
+  // Put buffer thread to sleep (should wake from sleep after refilling)
+  virtual void sleep() = 0;
 
 	inline bool eof() const
   {
@@ -104,31 +112,11 @@ public:
   // Read char and increase position by one byte
   // Does not lock! Be sure to own buffer before
   // calling.
-  char getc()
-  {
-    if(i>=buffer.size())
-      return '\0';
-    return buffer[i++];
-  }
+  bool next(char &result);
 
-  bool collectWordAsync(String &result, int *len);
-  bool collectDigitsAsync(String &result, int *len);
-  bool collectWordSync(String &result, int *len);
-  bool collectDigitsSync(String &result, int *len);
-
-  inline bool collectWord(String &result, int *len = 0)
-  {
-    if(isSynchronous())
-      return collectWordSync(result, len);
-    return collectWordAsync(result, len);
-  }
-  
-  inline bool collectDigits(String &result, int *len = 0)
-  {
-    if(isSynchronous())
-      return collectDigitsSync(result, len);
-    return collectDigitsAsync(result, len);
-  }
+  bool collectWord(String &result, int *len = 0);
+  bool collectDigits(String &result, int *len = 0);
+  bool skipWhitespace(int *len = 0);
 
 protected:
   Flags flags;

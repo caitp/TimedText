@@ -43,6 +43,7 @@ public:
   // threads
   void lock();
   void unlock();
+  void sleep();
 };
 
 } // TimedText

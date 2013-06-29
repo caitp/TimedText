@@ -80,7 +80,28 @@ String::operator=(const String &str)
 String &
 String::operator+=(const String &str)
 {
-  Data *x = static_cast<Data *>(::malloc(sizeof(Data) + ))
+  int n = size() + str.size();
+  Data *x = static_cast<Data *>(::malloc(sizeof(Data) + n));
+  x->ref = 1;
+  x->length = n;
+  ::memcpy(x->text, d->text, d->length);
+  ::memcpy(x->text + d->length, str.text(), str.length());;
+  x->text[n] = '\0';
+  Data *y = d;
+  d = x;
+  if(!--y->ref)
+    ::free(y);
+  return *this;
+}
+
+void
+String::clear()
+{
+  Data *old = d;
+  d = &sharedEmpty;
+  ++d->ref;
+  if(!--old->ref)
+    ::free(old);
 }
 
 int
