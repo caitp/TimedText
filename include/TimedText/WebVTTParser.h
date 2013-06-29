@@ -45,14 +45,16 @@ public:
     CueText,
     BadCue
   };
+  enum Status {
+    Finished,
+    Unfinished,
+    Aborted,
+  };
   WebVTTParser(Buffer &buffer);
   ~WebVTTParser();
 
-  static inline bool isHtml5Space(char c)
-  {
-
-    return c == ' ' || c == '\t' || c == '\n' || c == '\f' || c == '\r';
-  }
+  // Parse the document
+  bool parse(Status *status = 0);
 
   static inline bool isValidSignatureDelimiter(char c)
   {
@@ -63,7 +65,12 @@ public:
   }
 
 private:
-  Buffer *buffer;
+  bool parseHeader();
+
+  Buffer &buffer;
+  String line;
+  ParseState state;
+  Status status;
 };
 
 } // TimedText

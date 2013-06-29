@@ -25,7 +25,7 @@ Buffer::seek(int n, bool abs)
 {
   if(!abs)
     n += i;
-  if(n < 0 || n >= buffer.size())
+  if(n < 0 || n > buffer.size())
     return false;
   i = n;
   return true;
@@ -92,6 +92,76 @@ Buffer::next(char &out)
   }
   out = buffer.text()[i++];
   return true;
+}
+
+bool
+Buffer::getline(String &result, int maxlen)
+{
+  if(eof())
+    return true;
+  // This is a fairly generous buffer, which well
+  // exceeds the requirements of WebVTT
+  char tmp[0x200] = "";
+  char c;
+  bool finished = false;
+  bool wasCR = false;
+  int n = 0;
+  if(maxlen > 0 && result.size() >= maxlen)
+    goto skip;
+
+retry:
+  n = 0;
+  lock();
+  while(!finished && n < sizeof(tmp) && next(c)) {
+    if(c == '\n') {
+      finished = true;
+      wasCR = false;
+    } else if(c == '\r') {
+      wasCR = true;
+    } else {
+      if(wasCR) {
+        --i;
+        finished = true;
+      } else {
+        tmp[n++] = c;
+      }
+    }
+  }
+  unlock();
+
+  if(maxlen > 0 && result.size() < maxlen && result.size() + n > maxlen)
+    result += String(tmp, maxlen - result.size());
+  else
+    result += String(tmp, n);
+
+  if(!finished && (maxlen < 0 || maxlen > result.size()) && isAsynchronous()) {
+    // If we have an async buffer and we haven't read our line, wait for a
+    // refill and try again.
+    sleep();
+    goto retry;
+  }
+
+  if(!finished) {
+    if(maxlen < 0 || result.size() < maxlen)
+      goto retry; // Read another buffer
+skip:
+    while(!finished && next(c)) {
+      if(c == '\n') {
+        finished = true;
+        wasCR = false;
+      } else if(c == '\r') {
+        wasCR = true;
+      } else if(wasCR) {
+        --i;
+        finished = true;
+      }
+    }
+  }
+
+  if(eof())
+    finished = true;
+
+  return finished;
 }
 
 bool

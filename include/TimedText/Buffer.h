@@ -77,6 +77,26 @@ public:
     return i;
   }
 
+  inline int size() const
+  {
+    return buffer.size();
+  }
+
+  inline int length() const
+  {
+    return buffer.size();
+  }
+
+  inline int remaining() const
+  {
+    return size() - pos();
+  }
+
+  inline bool isFinal() const
+  {
+    return final;
+  }
+
   const char *curr() const;
 
   // Seek is not threadsafe and does not lock.
@@ -103,8 +123,9 @@ public:
   }
   inline bool finish() { return refill("", 0, true); }
 
-  // Return 'true' if line is read,
-  bool getline(String &result) const;
+  // Return 'true' if line is read, 0x400 bytes is a pretty generous
+  // default maximum line size.
+  bool getline(String &result, int maxlen = 0x400);
 
   // Read text as UTF-8, without seeking
   int read(char buffer[], int maximum);
