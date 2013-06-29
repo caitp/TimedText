@@ -7,7 +7,7 @@ compiler:
 env:
   - BUILD_TYPE="CheckAllOpt" BUILD="check --alltests" CFLAGS="-O3" CXXFLAGS="-O3" ANALYSIS="" ANALYSIS_ARGS=""
   - BUILD_TYPE="CheckAllDebug" BUILD="check --alltests" CFLAGS="-g -O0" CXXFLAGS="-g -O0" ANALYSIS="" ANALYSIS_ARGS=""
-  - BUILD_TYPE="ScanBuild" BUILD="build" CFLAGS="-g -O0" CXXFLAGS="-O3" ANALYSIS="scan-build" ANALYSIS_ARGS="-v -v -k --status-bugs" PACKAGES="clang"
+  - BUILD_TYPE="ScanBuild" BUILD="build" CFLAGS="-g -O0" CXXFLAGS="-O3" ANALYSIS="scan-build" ANALYSIS_ARGS="--status-bugs -disable-checker deadcode.DeadStores" PACKAGES="clang"
 
 before_install:
   - '[[ -z "${PACKAGES}" ]] || sudo apt-get -qq update'
