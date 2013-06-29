@@ -5,17 +5,17 @@ compiler:
   - clang
 
 env:
-  - BUILD_TYPE="CheckAllOpt" BUILD="make check-all" CFLAGS="-O3" CXXFLAGS="-O3" ANALYSIS="" ANALYSIS_ARGS=""
-  - BUILD_TYPE="CheckAllDebug" BUILD="make check-all" CFLAGS="-g -O0" CXXFLAGS="-g -O0" ANALYSIS="" ANALYSIS_ARGS=""
-  #- BUILD_TYPE="clang++ ScanBuild" BUILD="make check-all" CC="clang" CXX="clang++" CFLAGS="-g -O0" CXXFLAGS="-O3" ANALYSIS="scan-build" ANALYSIS_ARGS="-v -v -k" PACKAGES="clang"
+  - BUILD_TYPE="CheckAllOpt" BUILD="check --alltests" CFLAGS="-O3" CXXFLAGS="-O3" ANALYSIS="" ANALYSIS_ARGS=""
+  - BUILD_TYPE="CheckAllDebug" BUILD="check --alltests" CFLAGS="-g -O0" CXXFLAGS="-g -O0" ANALYSIS="" ANALYSIS_ARGS=""
+  - BUILD_TYPE="ScanBuild" BUILD="build" CFLAGS="-g -O0" CXXFLAGS="-O3" ANALYSIS="scan-build" ANALYSIS_ARGS="-v -v -k --status-bugs --use-cc --use-c++" PACKAGES="clang"
 
 before_install:
   - '[[ -z "${PACKAGES}" ]] || sudo apt-get -qq update'
   - '[[ -z "${PACKAGES}" ]] || sudo apt-get -qq install ${PACKAGES}'
 
 script:
-  - ${ANALYSIS} ./configure
-  - ${ANALYSIS} ${ANALYSIS_ARGS} ${BUILD}
+  - ${ANALYSIS} ./waf configure
+  - ${ANALYSIS} ${ANALYSIS_ARGS} ./waf ${BUILD}
 
 notifications:
   irc: "irc.freenode.net#seneca-webvtt"
