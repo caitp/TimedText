@@ -38,6 +38,8 @@
 // when it's fused.
 #include "gtest/gtest.h"
 
+#ifndef __clang_analyzer__
+
 // The following lines pull in the real gtest *.cc files.
 // Copyright 2005, Google Inc.
 // All rights reserved.
@@ -108,7 +110,6 @@
 
 #ifndef GTEST_INCLUDE_GTEST_GTEST_SPI_H_
 #define GTEST_INCLUDE_GTEST_GTEST_SPI_H_
-
 
 namespace testing {
 
@@ -9532,3 +9533,5 @@ const char* TypedTestCasePState::VerifyRegisteredTestNames(
 
 }  // namespace internal
 }  // namespace testing
+
+#endif // __clang_analyzer__

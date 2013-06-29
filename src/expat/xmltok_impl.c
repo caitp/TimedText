@@ -2,6 +2,8 @@
    See the file COPYING for copying permission.
 */
 
+#ifndef __clang_analyzer__
+
 /* This file is included! */
 #ifdef XML_TOK_IMPL_C
 
@@ -1781,3 +1783,5 @@ PREFIX(updatePosition)(const ENCODING *enc,
 #undef CHECK_NMSTRT_CASES
 
 #endif /* XML_TOK_IMPL_C */
+
+#endif /* __clang_analyzer__ */

@@ -125,7 +125,8 @@ sniffBufferForTTML(const char *buffer, int &pos, int len)
   TTMLSniffer sniffer = { parser, false };
   ::XML_SetUserData(parser,&sniffer);
   ::XML_SetStartNamespaceDeclHandler(parser, &ttmlNamespaceDecl);
-  ::XML_Status status = ::XML_Parse(parser, buffer + pos, len, 1);
+  // Ignore XML parser result
+  ::XML_Parse(parser, buffer + pos, len, 1);
   ::XML_ParserFree(parser);
 
   return sniffer.isTTML;

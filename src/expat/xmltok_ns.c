@@ -2,6 +2,8 @@
    See the file COPYING for copying permission.
 */
 
+#ifndef __clang_analyzer__
+
 /* This file is included! */
 #ifdef XML_TOK_NS_C
 
@@ -113,3 +115,5 @@ NS(XmlParseXmlDecl)(int isGeneralTextEntity,
 }
 
 #endif /* XML_TOK_NS_C */
+
+#endif /* __clang_analyzer__ */

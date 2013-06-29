@@ -1,0 +1,174 @@
+diff --git a/.travis.yml b/.travis.yml
+index d72900d..8858469 100644
+--- a/.travis.yml
++++ b/.travis.yml
+@@ -7,7 +7,7 @@ compiler:
+ env:
+   - BUILD_TYPE="CheckAllOpt" BUILD="check --alltests" CFLAGS="-O3" CXXFLAGS="-O3" ANALYSIS="" ANALYSIS_ARGS=""
+   - BUILD_TYPE="CheckAllDebug" BUILD="check --alltests" CFLAGS="-g -O0" CXXFLAGS="-g -O0" ANALYSIS="" ANALYSIS_ARGS=""
+-  - BUILD_TYPE="ScanBuild" BUILD="build" CFLAGS="-g -O0" CXXFLAGS="-O3" ANALYSIS="scan-build" ANALYSIS_ARGS="-v -v -k --status-bugs" PACKAGES="clang"
++  - BUILD_TYPE="ScanBuild" BUILD="build" CFLAGS="-g -O0" CXXFLAGS="-O3" ANALYSIS="scan-build" ANALYSIS_ARGS="--status-bugs -disable-checker deadcode.DeadStores" PACKAGES="clang"
+ 
+ before_install:
+   - '[[ -z "${PACKAGES}" ]] || sudo apt-get -qq update'
+diff --git a/src/Format.cpp b/src/Format.cpp
+index a08e8c8..94e4c83 100644
+--- a/src/Format.cpp
++++ b/src/Format.cpp
+@@ -45,7 +45,7 @@ skipBOM(const char *buffer, int &pos, int &len)
+   const char utf8BOM[] = { 0xEF, 0xBB, 0xBF };
+   // In any case, skip the UTF-8 BOM if we see one.
+   if(pos == 0 && len >= 3
+-     && !::memcmp(buffer + pos, &utf8BOM[0], sizeof(utf8BOM))) {
++     && !::memcmp(buffer + pos, utf8BOM, sizeof(utf8BOM))) {
+     pos += 3, len -= 3;
+     return true;
+   }
+diff --git a/src/expat/xmlparse.c b/src/expat/xmlparse.c
+index f35aa36..fa04a4b 100644
+--- a/src/expat/xmlparse.c
++++ b/src/expat/xmlparse.c
+@@ -25,6 +25,8 @@
+ #include "ascii.h"
+ #include "expat.h"
+ 
++#ifndef __clang_analyzer__
++
+ #ifdef XML_UNICODE
+ #define XML_ENCODE_MAX XML_UTF16_ENCODE_MAX
+ #define XmlConvert XmlUtf16Convert
+@@ -6401,3 +6403,5 @@ getElementType(XML_Parser parser,
+   }
+   return ret;
+ }
++
++#endif /* __clang_analyzer__ */
+diff --git a/src/expat/xmlrole.c b/src/expat/xmlrole.c
+index 44772e2..978a06d 100644
+--- a/src/expat/xmlrole.c
++++ b/src/expat/xmlrole.c
+@@ -23,6 +23,8 @@
+ #include "xmlrole.h"
+ #include "ascii.h"
+ 
++#ifndef __clang_analyzer__
++
+ /* Doesn't check:
+ 
+  that ,| are not mixed in a model group
+@@ -1334,3 +1336,5 @@ XmlPrologStateInitExternalEntity(PROLOG_STATE *state)
+ }
+ 
+ #endif /* XML_DTD */
++
++#endif /* __clang_analyzer__ */
+diff --git a/src/expat/xmltok.c b/src/expat/xmltok.c
+index bf09dfc..38a0de3 100644
+--- a/src/expat/xmltok.c
++++ b/src/expat/xmltok.c
+@@ -23,6 +23,8 @@
+ #include "xmltok.h"
+ #include "nametab.h"
+ 
++#ifndef __clang_analyzer__
++
+ #ifdef XML_DTD
+ #define IGNORE_SECTION_TOK_VTABLE , PREFIX(ignoreSectionTok)
+ #else
+@@ -1649,3 +1651,5 @@ XmlInitUnknownEncodingNS(void *mem,
+ }
+ 
+ #endif /* XML_NS */
++
++#endif /* __clang_analyzer__ */
+diff --git a/src/expat/xmltok_impl.c b/src/expat/xmltok_impl.c
+index 9c2895b..169f6e1 100644
+--- a/src/expat/xmltok_impl.c
++++ b/src/expat/xmltok_impl.c
+@@ -2,6 +2,8 @@
+    See the file COPYING for copying permission.
+ */
+ 
++#ifndef __clang_analyzer__
++
+ /* This file is included! */
+ #ifdef XML_TOK_IMPL_C
+ 
+@@ -1781,3 +1783,5 @@ PREFIX(updatePosition)(const ENCODING *enc,
+ #undef CHECK_NMSTRT_CASES
+ 
+ #endif /* XML_TOK_IMPL_C */
++
++#endif /* __clang_analyzer__ */
+diff --git a/src/expat/xmltok_ns.c b/src/expat/xmltok_ns.c
+index c3b88fd..758c0dd 100644
+--- a/src/expat/xmltok_ns.c
++++ b/src/expat/xmltok_ns.c
+@@ -2,6 +2,8 @@
+    See the file COPYING for copying permission.
+ */
+ 
++#ifndef __clang_analyzer__
++
+ /* This file is included! */
+ #ifdef XML_TOK_NS_C
+ 
+@@ -113,3 +115,5 @@ NS(XmlParseXmlDecl)(int isGeneralTextEntity,
+ }
+ 
+ #endif /* XML_TOK_NS_C */
++
++#endif /* __clang_analyzer__ */
+diff --git a/test/gtest-all.cc b/test/gtest-all.cc
+index 5fe4f59..39ac391 100644
+--- a/test/gtest-all.cc
++++ b/test/gtest-all.cc
+@@ -38,6 +38,8 @@
+ // when it's fused.
+ #include "gtest/gtest.h"
+ 
++#ifndef __clang_analyzer__
++
+ // The following lines pull in the real gtest *.cc files.
+ // Copyright 2005, Google Inc.
+ // All rights reserved.
+@@ -109,7 +111,6 @@
+ #ifndef GTEST_INCLUDE_GTEST_GTEST_SPI_H_
+ #define GTEST_INCLUDE_GTEST_GTEST_SPI_H_
+ 
+-
+ namespace testing {
+ 
+ // This helper class can be used to mock out Google Test failure reporting
+@@ -9532,3 +9533,5 @@ const char* TypedTestCasePState::VerifyRegisteredTestNames(
+ 
+ }  // namespace internal
+ }  // namespace testing
++
++#endif // __clang_analyzer__
+\ No newline at end of file
+diff --git a/test/wscript b/test/wscript
+index 1211b85..2890b6f 100644
+--- a/test/wscript
++++ b/test/wscript
+@@ -41,6 +41,10 @@ def build(ctx):
+ 	lib=[]
+ 	#ctx.options.all_tests = True
+ 	features=['cxx','cxxprogram']
++	cxxflags=ctx.env.CXXFLAGS
++	# Don't perform static analysis on gtest
++	if ctx.env.CXXNAME in ['g++','clang++']:
++		cxxflags.extend(['-w', '-Xanalyzer', '-analyzer-disable-checker'])
+ 	if ctx.cmd in ['check']:
+ 		features.append('test')
+ 	if ctx.env.DEST_OS in ['linux']:
+@@ -49,7 +53,8 @@ def build(ctx):
+ 		      target='../gtest',
+ 		      source='gtest-all.cc',
+ 		      includes='.',
+-		      export_includes='.')
++		      export_includes='.',
++		      cflags=cxxflags)
+ 
+ 	for subdir in SUBDIRS:
+ 		name='%sTests'%subdir

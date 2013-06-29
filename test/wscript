@@ -41,6 +41,10 @@ def build(ctx):
 	lib=[]
 	#ctx.options.all_tests = True
 	features=['cxx','cxxprogram']
+	cxxflags=ctx.env.CXXFLAGS
+	# Don't perform static analysis on gtest
+	if ctx.env.CXXNAME in ['g++','clang++']:
+		cxxflags.extend(['-w', '-Xanalyzer', '-analyzer-disable-checker'])
 	if ctx.cmd in ['check']:
 		features.append('test')
 	if ctx.env.DEST_OS in ['linux']:
@@ -49,7 +53,8 @@ def build(ctx):
 		      target='../gtest',
 		      source='gtest-all.cc',
 		      includes='.',
-		      export_includes='.')
+		      export_includes='.',
+		      cflags=cxxflags)
 
 	for subdir in SUBDIRS:
 		name='%sTests'%subdir

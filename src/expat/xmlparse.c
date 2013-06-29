@@ -25,6 +25,8 @@
 #include "ascii.h"
 #include "expat.h"
 
+#ifndef __clang_analyzer__
+
 #ifdef XML_UNICODE
 #define XML_ENCODE_MAX XML_UTF16_ENCODE_MAX
 #define XmlConvert XmlUtf16Convert
@@ -6401,3 +6403,5 @@ getElementType(XML_Parser parser,
   }
   return ret;
 }
+
+#endif /* __clang_analyzer__ */
