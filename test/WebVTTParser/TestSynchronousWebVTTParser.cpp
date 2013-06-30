@@ -80,10 +80,14 @@ void testCollectTimingsAndSettings(const char *text, bool isOk,
   ++run;
   EXPECT_TRUE(buffer.refill(text, -1, true));
   EXPECT_TRUE(buffer.getline(line));
-  EXPECT_EQ(expectedState, parser.collectTimingsAndSettings(line));
-  EXPECT_EQ(expectedStartTime,parser.currentStartTime) << "in testCollectTimingsAndSettings #" << run;
-  EXPECT_EQ(expectedEndTime,parser.currentEndTime) << "in testCollectTimingsAndSettings #" << run;
-  EXPECT_STREQ(expectedSettings,parser.currentSettings.text());
+  EXPECT_EQ(expectedState, parser.collectTimingsAndSettings(line))
+    << "in testCollectTimingsAndSettings #" << run;
+  EXPECT_EQ(expectedStartTime,parser.currentStartTime.toSeconds())
+    << "in testCollectTimingsAndSettings #" << run;
+  EXPECT_EQ(expectedEndTime,parser.currentEndTime.toSeconds())
+    << "in testCollectTimingsAndSettings #" << run;
+  EXPECT_STREQ(expectedSettings,parser.currentSettings.text())
+    << "in testCollectTimingsAndSettings #" << run;
 }
 
 TEST(SynchronousWebVTTParser, CollectTimingsAndSettings)

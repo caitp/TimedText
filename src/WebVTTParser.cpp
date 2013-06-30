@@ -190,7 +190,7 @@ WebVTTParser::collectTimingsAndSettings(const String &line)
   return CueText;
 }
 
-double
+Timestamp
 WebVTTParser::collectTimeStamp(const String &line, int &position)
 {
   enum Mode {
@@ -250,10 +250,8 @@ WebVTTParser::collectTimeStamp(const String &line, int &position)
   if(digits != 3)
     return MalformedTime;
 
-  return (value1 * SecondsPerHour)
-       + (value2 * SecondsPerMinute)
-       + value3
-       + (value4 * SecondsPerMillisecond);
+  Timestamp::Components components = { value1, value2, value3, value4 };
+  return Timestamp::fromComponents(components);
 }
 
 void

@@ -29,6 +29,7 @@
 #define __TimedText_WebVTTParser__
 
 #include <TimedText/Buffer.h>
+#include <TimedText/Timestamp.h>
 
 namespace TimedText
 {
@@ -90,7 +91,7 @@ private:
   void dropCue();
 
   ParseState collectTimingsAndSettings(const String &line);
-  double collectTimeStamp(const String &line, int &position);
+  Timestamp collectTimeStamp(const String &line, int &position);
 
   ParseState state;
   Buffer &buffer;
@@ -104,8 +105,8 @@ private:
   String currentId;
   String currentSettings;
   StringBuilder currentCueText;
-  double currentStartTime;
-  double currentEndTime;
+  Timestamp currentStartTime;
+  Timestamp currentEndTime;
 };
 
 } // TimedText
