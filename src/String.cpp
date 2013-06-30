@@ -60,6 +60,12 @@ String::String(const char *utf8, int len)
   }
 }
 
+String::~String()
+{
+  if(!--d->ref)
+    ::free(d);
+}
+
 String &
 String::operator=(const String &str)
 {
