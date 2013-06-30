@@ -55,3 +55,47 @@ TEST(String,Contains)
   EXPECT_TRUE(str.contains("Cthulhu", 7));
   EXPECT_TRUE(str.contains('C'));
 }
+
+TEST(String,Substring)
+{
+  String str("Phnglui mglw nafh Cthulhu R'lyeh wgah nagl fhtagn");
+  String sub1 = str.substring(18,7);
+  String sub2 = str.substring(26);
+  String sub3 = str.substring(26,-1);
+  String sub4 = str.substring(-1,50);
+  String sub5 = str.substring(43,100);
+  EXPECT_STREQ("Cthulhu",sub1.text());
+  EXPECT_STREQ("R'lyeh wgah nagl fhtagn", sub2.text());
+  EXPECT_STREQ("R'lyeh wgah nagl fhtagn", sub3.text());
+  EXPECT_STREQ("", sub4.text());
+  EXPECT_STREQ("fhtagn", sub5.text());
+}
+
+TEST(String,parseInt)
+{
+  int pos = 0;
+  int digits;
+  String str("12345678");
+  EXPECT_EQ(12345678, str.parseInt(pos, &digits));
+  EXPECT_EQ(8, pos);
+  EXPECT_EQ(8, digits);
+  str = String("~123");
+  pos = 0;
+  EXPECT_EQ(0, str.parseInt(pos, &digits));
+  EXPECT_EQ(0, pos);
+  EXPECT_EQ(0, digits);
+}
+
+TEST(String,SkipWhitespace)
+{
+  String str(" \t\f \r\n  Trees cover up a multitude of sins.");
+  int pos = 0;
+  EXPECT_EQ(8, str.skipWhitespace(pos));
+  EXPECT_EQ(8, pos);
+  EXPECT_STREQ("Trees cover up a multitude of sins.", str.text() + pos);
+  str = String("Trees cover up a multitude of sins.");
+  pos = 0;
+  EXPECT_EQ(0, str.skipWhitespace(pos));
+  EXPECT_EQ(0, pos);
+  EXPECT_STREQ("Trees cover up a multitude of sins.", str.text());
+}
