@@ -37,7 +37,7 @@ WebVTTParser::WebVTTParser(Buffer &buf, Client *_client)
   status = Unfinished;
   headerStatus = InitialHeader;
   withBOM = BOMUnknown;
-  currentStartTime = currentEndTime = MalformedTime;
+  currentStartTime = currentEndTime = MalformedTimestamp;
 }
 
 WebVTTParser::~WebVTTParser()
@@ -188,11 +188,11 @@ WebVTTParser::ParseState
 WebVTTParser::collectTimingsAndSettings(const String &line)
 {
   int position = 0;
-  currentStartTime = currentEndTime = MalformedTime;
+  currentStartTime = currentEndTime = MalformedTimestamp;
   line.skipWhitespace(position);
   currentStartTime = collectTimeStamp(line, position);
 
-  if(currentStartTime == MalformedTime)
+  if(currentStartTime.isMalformed())
     return BadCue;
 
   line.skipWhitespace(position);
@@ -207,7 +207,7 @@ WebVTTParser::collectTimingsAndSettings(const String &line)
 
   currentEndTime = collectTimeStamp(line, position);
 
-  if(currentEndTime == MalformedTime)
+  if(currentEndTime.isMalformed())
     return BadCue;
 
   line.skipWhitespace(position);
@@ -226,7 +226,7 @@ WebVTTParser::collectTimeStamp(const String &line, int &position)
   } mode = Minutes;
   int digits;
   if(position < 0 || position >= line.length() || !Char::isAsciiDigit(line[0]))
-    return MalformedTime;
+    return MalformedTimestamp;
 
   int value1 = line.parseInt(position, &digits);
   // Only the hours field is flexible in terms of how many digits
@@ -235,30 +235,30 @@ WebVTTParser::collectTimeStamp(const String &line, int &position)
     mode = Hours;
 
   if(position >= line.length() || line[position++] != ':')
-    return MalformedTime;
+    return MalformedTimestamp;
 
   if(position >= line.length() || !Char::isAsciiDigit(line[position]))
-    return MalformedTime;
+    return MalformedTimestamp;
 
   int value2 = line.parseInt(position, &digits);
   // TODO: Be more flexible here, we don't necessarily want to die
   // just because of a marginally invalid time component
   if(digits != 2)
-    return MalformedTime;
+    return MalformedTimestamp;
 
   int value3;
   if(mode == Hours || (position < line.length() && line[position] == ':')) {
     // If we don't have at least 3 components, or we have 3 but are expecting
     // 4, then die. TODO: As above, we can be more flexible here...
     if(position >= line.length() || line[position++] != ':')
-      return MalformedTime;
+      return MalformedTimestamp;
     // If it's not a number, there isn't much we can do with it...
     if(position >= line.length() || !Char::isAsciiDigit(line[position]))
-      return MalformedTime;
+      return MalformedTimestamp;
     value3 = line.parseInt(position, &digits);
     // TODO: Again, we should be more flexible here...
     if(digits != 2)
-      return MalformedTime;
+      return MalformedTimestamp;
   } else {
     // If we are actually minutes, then shift everything over a bit.
     value3 = value2;
@@ -267,15 +267,15 @@ WebVTTParser::collectTimeStamp(const String &line, int &position)
   }
 
   if(position >= line.length() || line[position++] != '.')
-    return MalformedTime;
+    return MalformedTimestamp;
   // If it's not a number, there isn't much we can do with it...
   if(position >= line.length() || !Char::isAsciiDigit(line[position]))
-    return MalformedTime;
+    return MalformedTimestamp;
 
   int value4 = line.parseInt(position, &digits);
   // TODO: same as above...
   if(digits != 3)
-    return MalformedTime;
+    return MalformedTimestamp;
 
   Timestamp::Components components = { value1, value2, value3, value4 };
   return Timestamp::fromComponents(components);
@@ -288,7 +288,7 @@ WebVTTParser::dispatchCue()
   // Create Cue object and send it off to the client
   currentSettings.clear();
   currentId.clear();
-  currentEndTime = currentStartTime = MalformedTime;
+  currentEndTime = currentStartTime = MalformedTimestamp;
   currentCueText.clear();
   state = Id;
 
@@ -301,7 +301,7 @@ WebVTTParser::dropCue()
 {
   currentSettings.clear();
   currentId.clear();
-  currentEndTime = currentStartTime = MalformedTime;
+  currentEndTime = currentStartTime = MalformedTimestamp;
   currentCueText.clear();
   state = Id;
 }
@@ -375,12 +375,13 @@ retry:
       break;
   }
   line.clear();
-  if(status != Aborted)
-    if(buffer.eof())
+  if(status != Aborted) {
+    if(buffer.eof()) {
       status = Finished;
-    else
+    } else {
       goto retry;
-
+    }
+  }
   if(pstatus)
     *pstatus = status;
   return status == Finished;

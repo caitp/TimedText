@@ -38,10 +38,6 @@ namespace TimedText
 class WebVTTParser
 {
 public:
-  static const double MalformedTime = -1;
-  static const double SecondsPerHour = 3600;
-  static const double SecondsPerMinute = 60;
-  static const double SecondsPerMillisecond = 0.001;
   enum ParseState {
         Initial,
         Header,
