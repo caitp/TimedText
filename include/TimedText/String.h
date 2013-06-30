@@ -42,6 +42,7 @@ class String
 {
 public:
 	explicit String(const char *utf8, int len=-1);
+  ~String();
 	String(const String &str);
 	String &operator=(const String &str);
 
