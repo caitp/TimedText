@@ -165,6 +165,37 @@ skip:
 }
 
 bool
+Buffer::skipline()
+{
+  char c;
+  bool wasCR = false;
+  bool finished = false;
+retry:
+  lock();
+  while(!finished && next(c)) {
+    if(c == '\n') {
+      finished = true;
+    } else if(c == '\r') {
+      wasCR = true;
+    } else if(wasCR) {
+      --i;
+      finished = true;
+    }
+  }
+  unlock();
+
+  if(!finished && !eof()) {
+    if(isAsynchronous()) {
+      sleep();
+      goto retry;
+    }
+  } else if(eof()) {
+    finished = true;
+  }
+  return finished;
+}
+
+bool
 Buffer::collectWord(String &result, int *len)
 {
   if(eof())

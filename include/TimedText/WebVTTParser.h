@@ -50,6 +50,17 @@ public:
     Unfinished,
     Aborted,
   };
+  enum BOMStatus {
+    BOMUnknown = 0,
+    WithBOM,
+    WithoutBOM
+  };
+  enum HeaderStatus {
+    InitialHeader = 0,
+    TagHeader, // Reading 'WEBVTT' tag
+    PostTagHeader, // Character following 'WEBVTT'
+    CommentHeader, // Post 'WEBVTT' tag comment
+  };
   WebVTTParser(Buffer &buffer);
   ~WebVTTParser();
 
@@ -66,11 +77,17 @@ public:
 
 private:
   bool parseHeader();
+  bool parseBOM();
+  bool parseHeaderTag();
+  bool parsePostHeaderTag();
+  bool parseHeaderComment();
 
   Buffer &buffer;
   String line;
   ParseState state;
   Status status;
+  BOMStatus withBOM : 2;
+  HeaderStatus headerStatus : 2;
 };
 
 } // TimedText

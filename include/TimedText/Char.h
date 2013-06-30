@@ -50,6 +50,12 @@ public:
   {
     return (c >= '0' && c <= '9');
   }
+
+  // Return true if 'c' is an ASCII newline character
+  static inline bool isNewlineChar(char c)
+  {
+    return (c == '\r' || c == '\n');
+  }
 };
 
 

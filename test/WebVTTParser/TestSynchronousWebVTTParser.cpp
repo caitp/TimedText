@@ -45,16 +45,16 @@ void testParseHeader(const char *text, bool shouldFinal,
 TEST(SynchronousWebVTTParser, ParseHeader)
 {
   testParseHeader("WEBVTT", true, true, WebVTTParser::Finished);
-  testParseHeader("WEBVTT\n", true, true, WebVTTParser::Unfinished);
-  testParseHeader("WEBVTT\r", true, true, WebVTTParser::Unfinished);
-  testParseHeader("WEBVTT ", true, true, WebVTTParser::Unfinished);
-  testParseHeader("WEBVTT\t", true, true, WebVTTParser::Unfinished);
+  testParseHeader("WEBVTT\n", true, true, WebVTTParser::Finished);
+  testParseHeader("WEBVTT\r", true, true, WebVTTParser::Finished);
+  testParseHeader("WEBVTT wutnow", true, true, WebVTTParser::Finished);
+  testParseHeader("WEBVTT\tohai", true, true, WebVTTParser::Finished);
   testParseHeader("WEBVTTT", true, false, WebVTTParser::Aborted);
   testParseHeader("\xEF\xBB\xBFWEBVTT", true, true, WebVTTParser::Finished);
-  testParseHeader("\xEF\xBB\xBFWEBVTT\n", true, true, WebVTTParser::Unfinished);
-  testParseHeader("\xEF\xBB\xBFWEBVTT\r", true, true, WebVTTParser::Unfinished);
-  testParseHeader("\xEF\xBB\xBFWEBVTT ", true, true, WebVTTParser::Unfinished);
-  testParseHeader("\xEF\xBB\xBFWEBVTT\t", true, true, WebVTTParser::Unfinished);
+  testParseHeader("\xEF\xBB\xBFWEBVTT\n", true, true, WebVTTParser::Finished);
+  testParseHeader("\xEF\xBB\xBFWEBVTT\r", true, true, WebVTTParser::Finished);
+  testParseHeader("\xEF\xBB\xBFWEBVTT ", true, true, WebVTTParser::Finished);
+  testParseHeader("\xEF\xBB\xBFWEBVTT\t", true, true, WebVTTParser::Finished);
   testParseHeader("\xEF\xBB\xBFWEBVTTT", true, false, WebVTTParser::Aborted);
   testParseHeader("\xBB\xBFWEBVTT", true, false, WebVTTParser::Aborted);
   testParseHeader("\xBFWEBVTT", true, false, WebVTTParser::Aborted);

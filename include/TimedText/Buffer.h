@@ -126,6 +126,7 @@ public:
   // Return 'true' if line is read, 0x400 bytes is a pretty generous
   // default maximum line size.
   bool getline(String &result, int maxlen = 0x400);
+  bool skipline();
 
   // Read text as UTF-8, without seeking
   int read(char buffer[], int maximum);

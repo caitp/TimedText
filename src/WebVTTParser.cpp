@@ -8,6 +8,8 @@ WebVTTParser::WebVTTParser(Buffer &buf)
 {
   state = Initial;
   status = Unfinished;
+  headerStatus = InitialHeader;
+  withBOM = BOMUnknown;
 }
 
 WebVTTParser::~WebVTTParser()
@@ -15,79 +17,151 @@ WebVTTParser::~WebVTTParser()
 }
 
 bool
-WebVTTParser::parseHeader()
+WebVTTParser::parseBOM()
 {
-  const char webvtt[] = "WEBVTT";
-  int n;
-  if(buffer.pos() == 0) {
-retryBOM:
-    if(buffer.size() < 3) {
-      status = Unfinished;
-      if(!buffer.isFinal() && buffer.isAsynchronous()) {
-        buffer.sleep();
-        goto retry;
-      }
-      return false;
-    }
-    char bom[3] = "";
-    const char utf8BOM[] = { 0xEF, 0xBB, 0xBF };
-    n = buffer.read(bom, sizeof(bom));
-    if(!::memcmp(utf8BOM, bom, 3)) {
-      buffer.seek(3, true);
-    } else if(!::memcmp(webvtt, bom, 3)) {
-      // Don't seek
-      goto retry;
-    } else {
-      // In all other cases, we abort. (This can't possibly
-      // have a valid header)
-      status = Aborted;
-      return false;
-    }
-  }
-  if(buffer.pos() == 0 || buffer.pos() == 3) {
+  if(headerStatus == InitialHeader && withBOM == BOMUnknown) {
 retry:
-    if(buffer.size() - buffer.pos() < 6) {
-      status = Unfinished;
-      if(!buffer.isFinal() && buffer.isAsynchronous()) {
-        buffer.sleep();
-        goto retry;
-      }
-      return false;
-    }
-    char header[6] = "";
-    int n = buffer.read(header, sizeof(header));
-    if(::memcmp(webvtt,header,6)) {
-      status = Aborted;
-      return false;
-    }
-    char c;
-    buffer.seek(6, false);
-    bool ok;
-retry_delimiter:
-    if(!(ok = buffer.next(c)) || !isValidSignatureDelimiter(c)) {
-      if(!ok && buffer.eof()) {
-        // This is a special case:
-        // 8. If position is past the end of input, then abort these steps.
-        //    The file was successfully processed, but it contains no useful
-        //    data and so no text track cues where added to output.
-        status = Finished;
-        return true;
-      } else if(ok) {
-        buffer.seek(-1);
+    if(buffer.remaining() < 3) {
+      if(!buffer.isFinal()) {
+        if(buffer.isAsynchronous()) {
+          buffer.sleep();
+          goto retry;
+        } else {
+          status = Unfinished;
+          return false;
+        }
+      } else {
         status = Aborted;
         return false;
-      } else if(buffer.isAsynchronous()) {
-        buffer.sleep();
-        goto retry_delimiter;
+      }
+    } else {
+      if(!::memcmp(buffer.curr(), "\xEF\xBB\xBF", 3)) {
+        buffer.seek(3);
+        withBOM = WithBOM;
+      } else if(!::memcmp(buffer.curr(), "WEB", 3)) {
+        withBOM = WithoutBOM;
       } else {
-        status = Unfinished;
+        // In any other situation, we have an invalid header
+        // and need to abort parsing
+        status = Aborted;
         return false;
       }
     }
-    state = Header;
-    return true;
+    headerStatus = TagHeader;
   }
-  return false;
+  return true;
+}
+
+bool
+WebVTTParser::parseHeaderTag()
+{
+  if(headerStatus == TagHeader) {
+retry:
+    if(buffer.remaining() < 6) {
+      if(!buffer.isFinal()) {
+        if(buffer.isAsynchronous()) {
+          buffer.sleep();
+          goto retry;
+        } else {
+          status = Unfinished;
+          return false;
+        }
+      } else {
+        status = Aborted;
+        return false;
+      }
+    } else {
+      if(!::memcmp(buffer.curr(), "WEBVTT", 6)) {
+        buffer.seek(6);
+        headerStatus = PostTagHeader;
+      } else {
+        // If 'WEBVTT' is not the first non-BOM bytes,
+        // then this cannot be a valid WebVTT document.
+        status = Aborted;
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+bool
+WebVTTParser::parsePostHeaderTag()
+{
+  if(headerStatus == PostTagHeader) {
+retry:
+    if(buffer.remaining() < 1) {
+      if(!buffer.isFinal()) {
+        if(buffer.isAsynchronous()) {
+          buffer.sleep();
+          goto retry;
+        } else {
+          status = Unfinished;
+          return false;
+        }
+      } else {
+        // If this branch is reached, we are in the final
+        // block of the document and there are no bytes left.
+        // If this state is correct, then we have correctly
+        // parsed an empty document.
+        status = Finished;
+        return true;
+      }
+    } else {
+      // If we do have a byte to read, it needs to be an acceptable
+      // byte.
+      char c;
+      buffer.next(c);
+      if(isValidSignatureDelimiter(c)) {
+        if(Char::isNewlineChar(c))
+          buffer.seek(-1);
+        headerStatus = CommentHeader;
+      } else {
+        // If it's not a valid signature delimiter, it's a bad document.
+        // Sorry :(
+        status = Aborted;
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+bool
+WebVTTParser::parseHeaderComment()
+{
+  if(headerStatus == CommentHeader) {
+    if(buffer.skipline()) {
+      state = Id;
+      // Once we've gotten to the HeaderComment state,
+      // we will always have a Finished document on eof()
+      if(buffer.eof())
+        status = Finished;
+    } else {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool
+WebVTTParser::parseHeader()
+{
+  if(state != Initial)
+    return false;
+  if(headerStatus == InitialHeader)
+    if(!parseBOM())
+      return false;
+  if(headerStatus == TagHeader)
+    if(!parseHeaderTag())
+      return false;
+  if(headerStatus == PostTagHeader)
+    if(!parsePostHeaderTag())
+      return false;
+  if(headerStatus == CommentHeader)
+    if(!parseHeaderComment())
+      return false;
+  return true;
 }
 
 bool
