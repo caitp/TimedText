@@ -33,6 +33,9 @@ def options(ctx):
 	ctx.add_option('--compact',dest='compact',
 		           help='Show compacted test output',
 		           action='store_true', default=False)
+	ctx.add_option('--with-valgrind',dest='valgrind',
+		           help='Run tests with valgrind checks',
+		           action='store_true', default=False)
 
 def configure(ctx):
 	pass
@@ -42,6 +45,9 @@ def build(ctx):
 	#ctx.options.all_tests = True
 	features=['cxx','cxxprogram']
 	cxxflags=ctx.env.CXXFLAGS
+	if ctx.options.testcmd is False and ctx.options.valgrind is True:
+		ctx.options.testcmd = "valgrind --tool=memcheck --track-origins=yes --leak-check=full --error-exitcode=1 %s"
+		print "Using valgrind! %s" % ctx.options.testcmd
 	if ctx.cmd in ['check']:
 		features.append('test')
 	if ctx.env.DEST_OS in ['linux']:
@@ -60,7 +66,29 @@ def build(ctx):
 			        use=['gtest','timedtext'], lib=lib, features=features,
 			        defines=['private=public','protected=public'])
 
+	val = re.compile('=+\d+=+ (?P<details>.*)')
+	def proc_valgrind_err(err):
+		for l in err.splitlines(False):
+			m = re.match(val, l)
+			s = l
+			if m:
+				md = m.groupdict()
+				s = md['details']
+			Logs.pprint('CYAN', s)
+
+	def proc_default_err(err):
+		for l in err.splitlines(False):
+			Logs.pprint('CYAN',l)
+	proc_err = None
+	if isinstance(ctx.options.testcmd,str) or isinstance(ctx.options.testcmd,basestring):
+		if 'valgrind' in ctx.options.testcmd:
+			proc_err = proc_valgrind_err
+    	
+	if not proc_err:
+		proc_err = proc_default_err
+
 	ptn = re.compile('(?P<prefix>\[\s*(?P<type>\w+|=+|-+)\s*\])(?P<info>\s+.*)')
+	
 	def colourify(ctx):
 		lst = getattr(ctx, 'utest_results', [])
 		_cols = {
@@ -96,6 +124,7 @@ def build(ctx):
 										md['prefix'], label=md['info'])
 						elif not l.startswith('Running'):
 							Logs.pprint('NORMAL', l)
+					proc_err(err)
 				else:
 					Logs.pprint(col,st, label=os.path.basename(f))
 			if failed==0: Logs.pprint('GREEN',"[==========] ", label="Passed all tests")
