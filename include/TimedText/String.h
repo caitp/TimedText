@@ -118,11 +118,19 @@ public:
   }
   bool endsWith(unsigned long ucs4) const;
 
+  static int parseInt(const char *buffer, int len = -1);
   int parseInt(int &position, int *digits) const;
   int skipWhitespace(int &position) const;
 
   String substring(int position) const;
   String substring(int position, int length) const;
+
+  bool collectWord(int &position, char out[], int max) const;
+  template <size_t N>
+  inline bool collectWord(int &position, char (&out)[N]) const {
+    return collectWord(position, out, N);
+  }
+  int skipUntilWhitespace(int &position) const;
 
 private:
   friend class StringBuilder;

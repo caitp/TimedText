@@ -30,6 +30,7 @@
 
 #include <TimedText/Buffer.h>
 #include <TimedText/Timestamp.h>
+#include <TimedText/Client.h>
 
 namespace TimedText
 {
@@ -66,7 +67,7 @@ public:
     PostTagHeader, // Character following 'WEBVTT'
     CommentHeader, // Post 'WEBVTT' tag comment
   };
-  WebVTTParser(Buffer &buffer);
+  WebVTTParser(Buffer &buffer, Client *client = 0);
   ~WebVTTParser();
 
   // Parse the document
@@ -94,6 +95,7 @@ private:
   Timestamp collectTimeStamp(const String &line, int &position);
 
   ParseState state;
+  Client *client;
   Buffer &buffer;
   String line;
 

@@ -60,6 +60,12 @@ String::String(const char *utf8, int len)
   }
 }
 
+String::String(const String &str)
+  : d(str.d)
+{
+  d->ref++;
+}
+
 String::~String()
 {
   if(!--d->ref)
@@ -193,6 +199,39 @@ String::parseInt(int &position, int *digits) const
 }
 
 int
+String::parseInt(const char *buffer, int len)
+{
+  if(!buffer)
+    return 0;
+  if(len < 0)
+    len = ::strlen(buffer);
+  if(len == 0)
+    return 0;
+  // Radix is always 10 here
+  const int radix = 10;
+  bool neg = false;
+  int value = 0;
+  int i = 0;
+  int d = 0;
+  for( int i=0; i<len; ++i) {
+    char c = buffer[i];
+    if(c == '-' && i == 0) {
+      neg = true;
+    } else if(Char::isAsciiDigit(c)) {
+      ++d;
+      value = (value * radix) + c - '0';
+    } else {
+      break;
+    }
+  }
+  if(!d)
+    return 0;
+  if(neg)
+    value = -value;
+  return value;
+}
+
+int
 String::skipWhitespace(int &position) const
 {
   int i = 0;
@@ -221,6 +260,32 @@ String::substring(int position, int len) const
   if(position + len >= length())
     len = length() - position;
   return String(d->text + position, len);
+}
+
+bool
+String::collectWord(int &position, char out[], int max) const
+{
+  int n = 0;
+  if(position < 0 || position >= length() || max <= 0)
+    return false;
+  for( ; position < length() && !Char::isHtml5Space(d->text[position]);
+         out[n++] = d->text[position++]);
+  if(n < max) {
+    out[n] = '\0';
+    return true;
+  }
+  return false;
+}
+
+int
+String::skipUntilWhitespace(int &position) const
+{
+  int n = 0;
+  if(position < 0 || position >= length())
+    return 0;
+  for( ; position < length() && !Char::isHtml5Space(d->text[position]);
+       ++n, ++position);
+  return n;
 }
 
 static inline int
