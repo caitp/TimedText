@@ -25,34 +25,40 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#include <TimedText/SynchronousBuffer.h>
-#include <cstring>
+#ifndef __TimedText_Char__
+#define __TimedText_Char__
 
 namespace TimedText
 {
 
-SynchronousBuffer::SynchronousBuffer()
-  : Buffer(Buffer::Synchronous)
+// Character-specific methods and routines should be placed here if they are
+// not specific to a single format. If the routine is specific to a single
+// TimedText document format, it should be placed in that format's parser
+// class.
+class Char
 {
-}
+public:
+  // Return true if 'c' is an HTML5 space character (U+0020, U+0009, U+000A,
+  // U+000D, or U+000C)
+  static inline bool isHtml5Space(char c)
+  {
+    return c == ' ' || c == '\t' || c == '\n' || c == '\f' || c == '\r';
+  }
 
-SynchronousBuffer::~SynchronousBuffer()
-{
-}
+  // Return true if 'c' is an ASCII digit (inclusively between '0' and '9')
+  static inline bool isAsciiDigit(char c)
+  {
+    return (c >= '0' && c <= '9');
+  }
 
-void
-SynchronousBuffer::lock()
-{
-}
+  // Return true if 'c' is an ASCII newline character
+  static inline bool isNewlineChar(char c)
+  {
+    return (c == '\r' || c == '\n');
+  }
+};
 
-void
-SynchronousBuffer::unlock()
-{
-}
-
-void
-SynchronousBuffer::sleep()
-{
-}
 
 } // TimedText
+
+#endif // __TimedText_Char__

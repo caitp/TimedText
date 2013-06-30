@@ -41,9 +41,15 @@ public:
     Synchronous = 0,
     Asynchronous = 1,
     SynchronousMask = (Synchronous|Asynchronous),
+    Sleeping = 2,
   };
   Buffer(Flags flags);
   ~Buffer();
+
+  inline bool isSleeping() const
+  {
+    return (flags & Sleeping) != 0;
+  }
 
   inline bool isSynchronous() const
   {
@@ -58,6 +64,8 @@ public:
   // Locking operations (These should be blocking, with high priority)
   virtual void lock() = 0;
   virtual void unlock() = 0;
+  // Put buffer thread to sleep (should wake from sleep after refilling)
+  virtual void sleep() = 0;
 
 	inline bool eof() const
   {
@@ -67,6 +75,26 @@ public:
   inline int pos() const
   {
     return i;
+  }
+
+  inline int size() const
+  {
+    return buffer.size();
+  }
+
+  inline int length() const
+  {
+    return buffer.size();
+  }
+
+  inline int remaining() const
+  {
+    return size() - pos();
+  }
+
+  inline bool isFinal() const
+  {
+    return final;
   }
 
   const char *curr() const;
@@ -95,11 +123,22 @@ public:
   }
   inline bool finish() { return refill("", 0, true); }
 
-  // Return 'true' if line is read,
-  bool getline(String &result) const;
+  // Return 'true' if line is read, 0x400 bytes is a pretty generous
+  // default maximum line size.
+  bool getline(String &result, int maxlen = 0x400);
+  bool skipline();
 
   // Read text as UTF-8, without seeking
   int read(char buffer[], int maximum);
+
+  // Read char and increase position by one byte
+  // Does not lock! Be sure to own buffer before
+  // calling.
+  bool next(char &result);
+
+  bool collectWord(String &result, int *len = 0);
+  bool collectDigits(String &result, int *len = 0);
+  bool skipWhitespace(int *len = 0);
 
 protected:
   Flags flags;
