@@ -78,6 +78,12 @@ void testCollectTimingsAndSettings(const char *text, bool isOk,
                                                 : WebVTTParser::BadCue;
   String line;
   ++run;
+  // The MalformedTimestamp value is -1 milliseconds, but it's simpler to
+  // write -1.
+  if(expectedStartTime < 0)
+    expectedStartTime = -0.001;
+  if(expectedEndTime < 0)
+    expectedEndTime = -0.001;
   EXPECT_TRUE(buffer.refill(text, -1, true));
   EXPECT_TRUE(buffer.getline(line));
   EXPECT_EQ(expectedState, parser.collectTimingsAndSettings(line))
