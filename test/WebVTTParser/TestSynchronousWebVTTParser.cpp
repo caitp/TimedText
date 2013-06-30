@@ -100,7 +100,7 @@ TEST(SynchronousWebVTTParser, CollectTimingsAndSettings)
   testCollectTimingsAndSettings("00:35.555  -->  00:35.666", true, 35.555, 35.666);
 
   // Different syntax errors
-  testCollectTimingsAndSettings("01:0:35.555-->02:00:35.666", false, -1, 35.666);
+  testCollectTimingsAndSettings("01:0:35.555-->02:00:35.666", false, -1, -1);
   testCollectTimingsAndSettings("1:00:35.555-->2:0:35.666", false, 3635.555, -1);
   testCollectTimingsAndSettings("00:5.555-->00:35.666", false, -1, -1);
   testCollectTimingsAndSettings("00:02.555 --> 00:5.666", false, 2.555, -1);

@@ -10,6 +10,7 @@ WebVTTParser::WebVTTParser(Buffer &buf)
   status = Unfinished;
   headerStatus = InitialHeader;
   withBOM = BOMUnknown;
+  currentStartTime = currentEndTime = MalformedTime;
 }
 
 WebVTTParser::~WebVTTParser()
@@ -160,6 +161,7 @@ WebVTTParser::ParseState
 WebVTTParser::collectTimingsAndSettings(const String &line)
 {
   int position = 0;
+  currentStartTime = currentEndTime = MalformedTime;
   line.skipWhitespace(position);
   currentStartTime = collectTimeStamp(line, position);
 
