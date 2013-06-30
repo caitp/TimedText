@@ -113,30 +113,6 @@ bool StringBuilder::toString(String &result) const
   return result.size()==size();
 }
 
-int
-StringBuilder::length() const
-{
-  return d->length;
-}
-
-int
-StringBuilder::size() const
-{
-  return d->length;
-}
-
-int
-StringBuilder::capacity() const
-{
-  return d->alloc;
-}
-
-const char *
-StringBuilder::text() const
-{
-  return d->text;
-}
-
 void
 StringBuilder::clear()
 {

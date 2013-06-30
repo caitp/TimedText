@@ -29,6 +29,7 @@
 #ifndef __TimedText_String__
 #define __TimedText_String__
 
+#include <TimedText/Char.h>
 #include <TimedText/Unicode.h>
 #include <cstring>
 
@@ -41,10 +42,12 @@ class StringBuilder;
 class String
 {
 public:
+  String() : d(&sharedEmpty) { ++d->ref; }
 	explicit String(const char *utf8, int len=-1);
   ~String();
 	String(const String &str);
 	String &operator=(const String &str);
+  String &operator+=(const String &str);
 
 	// Returns true if the string is empty or NULL.
 	inline bool isEmpty() const {
@@ -62,6 +65,14 @@ public:
 	inline const char *text() const {
 		return d->text;
 	}
+
+  inline char operator[](int i) const {
+    if(i < 0 || i >= d->length)
+      return '\0';
+    return d->text[i];
+  }
+
+  void clear();
 
   int indexOf(const char *text, int len=-1, int from = 0) const;
   inline int indexOf(const String &str, int from = 0) const {
@@ -107,6 +118,12 @@ public:
   }
   bool endsWith(unsigned long ucs4) const;
 
+  int parseInt(int &position, int *digits) const;
+  int skipWhitespace(int &position) const;
+
+  String substring(int position) const;
+  String substring(int position, int length) const;
+
 private:
   friend class StringBuilder;
   static int findString(const char *bucket, int bucket_len, int from,
@@ -123,6 +140,8 @@ private:
   static Data sharedEmpty;
   static Data sharedNull;
 };
+
+bool isAsciiDigit(char c);
 
 } // TimedText
 

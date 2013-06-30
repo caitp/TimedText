@@ -28,14 +28,84 @@
 #ifndef __TimedText_WebVTTParser__
 #define __TimedText_WebVTTParser__
 
+#include <TimedText/Buffer.h>
+
 namespace TimedText
 {
 
 class WebVTTParser
 {
 public:
-  WebVTTParser(IncrementalBuffer &buffer);
-  
+  static const double MalformedTime = -1;
+  static const double SecondsPerHour = 3600;
+  static const double SecondsPerMinute = 60;
+  static const double SecondsPerMillisecond = 0.001;
+  enum ParseState {
+        Initial,
+        Header,
+
+        Id,
+        TimingsAndSettings,
+        CueText,
+        BadCue
+  };
+  enum Status {
+    Finished,
+    Unfinished,
+    Aborted,
+  };
+  enum BOMStatus {
+    BOMUnknown = 0,
+    WithBOM,
+    WithoutBOM
+  };
+  enum HeaderStatus {
+    InitialHeader = 0,
+    TagHeader, // Reading 'WEBVTT' tag
+    PostTagHeader, // Character following 'WEBVTT'
+    CommentHeader, // Post 'WEBVTT' tag comment
+  };
+  WebVTTParser(Buffer &buffer);
+  ~WebVTTParser();
+
+  // Parse the document
+  bool parse(Status *status = 0);
+
+  static inline bool isValidSignatureDelimiter(char c)
+  {
+    // Currently, the 'WEBVTT' signature must be followed by either a
+    // SPACE (U+0020), TAB (U+0009), CARRIAGE RETURN (U+000D) or LINE FEED
+    // (U+000A), but not a FORM FEED
+    return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+  }
+
+private:
+  bool parseHeader();
+  bool parseBOM();
+  bool parseHeaderTag();
+  bool parsePostHeaderTag();
+  bool parseHeaderComment();
+
+  void dispatchCue();
+  void dropCue();
+
+  ParseState collectTimingsAndSettings(const String &line);
+  double collectTimeStamp(const String &line, int &position);
+
+  ParseState state;
+  Buffer &buffer;
+  String line;
+
+  Status status;
+  BOMStatus withBOM : 2;
+  HeaderStatus headerStatus : 2;
+
+  // Current Cue:
+  String currentId;
+  String currentSettings;
+  StringBuilder currentCueText;
+  double currentStartTime;
+  double currentEndTime;
 };
 
 } // TimedText

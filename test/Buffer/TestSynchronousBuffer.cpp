@@ -77,3 +77,64 @@ TEST(SynchronousBuffer,ReadValidUtf8)
   EXPECT_EQ(23, buffer.read(text, sizeof(text)));
   EXPECT_STREQ("R'lyeh wgah nagl fhtagn", text);
 }
+
+TEST(SynchronousBuffer,CollectWord)
+{
+  SynchronousBuffer buffer;
+  String word;
+  char unused;
+  int n;
+  EXPECT_TRUE(buffer.refill("Phnglui mglw nafh Cthulhu R'lyeh "
+                            "wgah nagl fhtagn"));
+  EXPECT_TRUE(buffer.collectWord(word, &n));
+  EXPECT_EQ(7, n);
+  EXPECT_STREQ("Phnglui", word.text());
+  word.clear();
+  EXPECT_TRUE(buffer.next(unused));
+  EXPECT_TRUE(buffer.collectWord(word, &n));
+  EXPECT_EQ(4, n);
+  EXPECT_STREQ("mglw", word.text());
+  word.clear();
+  EXPECT_TRUE(buffer.next(unused));
+  EXPECT_TRUE(buffer.collectWord(word, &n));
+  EXPECT_EQ(4, n);
+  EXPECT_STREQ("nafh", word.text());
+  word.clear();
+  EXPECT_TRUE(buffer.next(unused));
+  EXPECT_TRUE(buffer.collectWord(word, &n));
+  EXPECT_EQ(7, n);
+  EXPECT_STREQ("Cthulhu", word.text());
+  word.clear();
+  EXPECT_TRUE(buffer.next(unused));
+}
+
+
+TEST(SynchronousBuffer,CollectDigits)
+{
+  SynchronousBuffer buffer;
+  String digits;
+  int n;
+  char unused;
+  EXPECT_TRUE(buffer.refill("1234x56789x0",-1,true));
+  EXPECT_TRUE(buffer.collectDigits(digits,&n));
+  EXPECT_STREQ("1234",digits.text());
+  EXPECT_EQ(4, n);
+  EXPECT_TRUE(buffer.next(unused)); // skip 'x'
+  EXPECT_TRUE(buffer.collectDigits(digits, &n));
+  EXPECT_STREQ("123456789", digits.text());
+  EXPECT_EQ(5, n);
+  EXPECT_TRUE(buffer.next(unused)); // skip 'x'
+  EXPECT_TRUE(buffer.collectDigits(digits, &n));
+  EXPECT_STREQ("1234567890", digits.text());
+  EXPECT_EQ(1, n);
+}
+
+TEST(SynchronousBuffer,SkipWhitespace)
+{
+  SynchronousBuffer buffer;
+  int n;
+  EXPECT_TRUE(buffer.refill("\t\t\t\t\r\n\r\n   \f\f\fHello World!"));
+  EXPECT_TRUE(buffer.skipWhitespace(&n));
+  EXPECT_EQ(14, n);
+  EXPECT_STREQ("Hello World!", buffer.curr());
+}
