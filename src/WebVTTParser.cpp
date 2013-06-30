@@ -173,6 +173,7 @@ WebVTTParser::collectTimingsAndSettings(const String &line)
   if(line.indexOf("-->") != position)
     return BadCue;
 
+  position += 3;
   line.skipWhitespace(position);
 
   currentEndTime = collectTimeStamp(line, position);

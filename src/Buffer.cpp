@@ -129,6 +129,9 @@ retry:
   }
   unlock();
 
+  if(eof())
+    finished = true;
+
   if(maxlen > 0 && result.size() < maxlen && result.size() + n > maxlen)
     result += String(tmp, maxlen - result.size());
   else
@@ -143,7 +146,7 @@ retry:
 
   if(!finished) {
     if(maxlen < 0 || result.size() < maxlen)
-      goto retry; // Read another buffer
+      return false;
 skip:
     while(!finished && next(c)) {
       if(c == '\n') {
@@ -157,9 +160,6 @@ skip:
       }
     }
   }
-
-  if(eof())
-    finished = true;
 
   return finished;
 }

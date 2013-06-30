@@ -34,12 +34,16 @@ void testParseHeader(const char *text, bool shouldFinal,
                      bool shouldParse,
                      WebVTTParser::Status shouldStatus)
 {
+  static int run = 0;
   SynchronousBuffer buffer;
   WebVTTParser parser(buffer);
-  EXPECT_TRUE(buffer.refill(text, -1, shouldFinal));
+  ++run;
+  EXPECT_TRUE(buffer.refill(text, -1, shouldFinal))
+    << "in testParseHeader #" << run;
   EXPECT_EQ(shouldParse, parser.parseHeader())
-    << "when trying to parse \"" << text << "\"";
-  EXPECT_EQ(parser.status, shouldStatus);
+    << "in testParseHeader #" << run << " when trying to parse \"" << text << "\"";
+  EXPECT_EQ(parser.status, shouldStatus)
+    << "in testParseHeader #" << run;
 }
 
 TEST(SynchronousWebVTTParser, ParseHeader)
@@ -60,4 +64,50 @@ TEST(SynchronousWebVTTParser, ParseHeader)
   testParseHeader("\xBFWEBVTT", true, false, WebVTTParser::Aborted);
   testParseHeader("\xEF\xBBWEBVTT", true, false, WebVTTParser::Aborted);
   testParseHeader("\xEF\xBB\xBFPEBVTT", true, false, WebVTTParser::Aborted);
+}
+
+void testCollectTimingsAndSettings(const char *text, bool isOk,
+                                   double expectedStartTime,
+                                   double expectedEndTime,
+                                   const char *expectedSettings = "")
+{
+  static int run = 0;
+  SynchronousBuffer buffer;
+  WebVTTParser parser(buffer);
+  WebVTTParser::ParseState expectedState = isOk ? WebVTTParser::CueText
+                                                : WebVTTParser::BadCue;
+  String line;
+  ++run;
+  EXPECT_TRUE(buffer.refill(text, -1, true));
+  EXPECT_TRUE(buffer.getline(line));
+  EXPECT_EQ(expectedState, parser.collectTimingsAndSettings(line));
+  EXPECT_EQ(expectedStartTime,parser.currentStartTime) << "in testCollectTimingsAndSettings #" << run;
+  EXPECT_EQ(expectedEndTime,parser.currentEndTime) << "in testCollectTimingsAndSettings #" << run;
+  EXPECT_STREQ(expectedSettings,parser.currentSettings.text());
+}
+
+TEST(SynchronousWebVTTParser, CollectTimingsAndSettings)
+{
+  // Different ways that timestamps can be successfully parsed
+  testCollectTimingsAndSettings("01:00:35.555-->02:00:35.666", true, 3635.555, 7235.666);
+  testCollectTimingsAndSettings("1:00:35.555-->2:00:35.666", true, 3635.555, 7235.666);
+  testCollectTimingsAndSettings("00:35.555-->00:35.666", true, 35.555, 35.666);
+  testCollectTimingsAndSettings("00:35.555 --> 00:35.666", true, 35.555, 35.666);
+  testCollectTimingsAndSettings("00:35.555\t-->\t00:35.666", true, 35.555, 35.666);
+  testCollectTimingsAndSettings("00:35.555\f-->\f00:35.666", true, 35.555, 35.666);
+  testCollectTimingsAndSettings("00:35.555\f\f-->\f\f00:35.666", true, 35.555, 35.666);
+  testCollectTimingsAndSettings("00:35.555\t\t-->\t\t00:35.666", true, 35.555, 35.666);
+  testCollectTimingsAndSettings("00:35.555  -->  00:35.666", true, 35.555, 35.666);
+
+  // Different syntax errors
+  testCollectTimingsAndSettings("01:0:35.555-->02:00:35.666", false, -1, 35.666);
+  testCollectTimingsAndSettings("1:00:35.555-->2:0:35.666", false, 3635.555, -1);
+  testCollectTimingsAndSettings("00:5.555-->00:35.666", false, -1, -1);
+  testCollectTimingsAndSettings("00:02.555 --> 00:5.666", false, 2.555, -1);
+  testCollectTimingsAndSettings("00:35.55\t-->\t00:35.066", false, -1, -1);
+  testCollectTimingsAndSettings("00:35.055\f-->\f00:35.66", false, 35.055, -1);
+  testCollectTimingsAndSettings(":35.555\f\f-->\f\f00:35.666", false, -1, -1);
+  testCollectTimingsAndSettings("00:35.555\t\t-->\t\t:35.666", false, 35.555, -1);
+  testCollectTimingsAndSettings("00:35.555  --->  00:35.666", false, 35.555, -1);
+  testCollectTimingsAndSettings("00:35.555  -->>  00:35.666", false, 35.555, -1);
 }
