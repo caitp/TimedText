@@ -31,7 +31,6 @@ using namespace TimedText;
 
 TEST(String,StartsWith)
 {
-  char *meow = new char[0x4000];
   String str("Phnglui mglw nafh Cthulhu R'lyeh wgah nagl fhtagn");
   EXPECT_TRUE(str.startsWith("Phnglui"));
   EXPECT_TRUE(str.startsWith("Phnglui", -1));
