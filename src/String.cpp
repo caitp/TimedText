@@ -172,6 +172,57 @@ String::endsWith(unsigned long ucs4) const
   return endsWith(sw,sl);
 }
 
+int
+String::parseInt(int &position, int *digits) const
+{
+  // Radix is always 10 here
+  const int radix = 10;
+  int value = 0;
+  int i = 0;
+  if(digits)
+    *digits = 0;
+  if(position < 0 || position >= length())
+    return 0;
+  // TODO:
+  // Can we make this not suck for EBCDIC systems? Do we care?
+  for( ; position < length() && Char::isAsciiDigit(d->text[position]); ++i )
+    value = (value * radix) + d->text[position++] - '0';
+  if(digits)
+    *digits = i;
+  return value;
+}
+
+int
+String::skipWhitespace(int &position) const
+{
+  int i = 0;
+  if(position < 0 || position >= length())
+    return 0;
+  for( ; position < length() && Char::isHtml5Space(d->text[position]); ++i)
+    ++position;
+  return i;
+}
+
+String
+String::substring(int position) const
+{
+  if(position < 0 || position >= length())
+    return String();
+  return String(d->text + position, d->length - position);
+}
+
+String
+String::substring(int position, int len) const
+{
+  if(len < 0)
+    return substring(position);
+  if(len == 0 || position < 0 || position >= length())
+    return String();
+  if(position + len >= length())
+    len = length() - position;
+  return String(d->text + position, len);
+}
+
 static inline int
 findChar(const char *bucket0, int bucketLen, char needle, int from)
 {

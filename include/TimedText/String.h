@@ -66,6 +66,12 @@ public:
 		return d->text;
 	}
 
+  inline char operator[](int i) const {
+    if(i < 0 || i >= d->length)
+      return '\0';
+    return d->text[i];
+  }
+
   void clear();
 
   int indexOf(const char *text, int len=-1, int from = 0) const;
@@ -111,6 +117,12 @@ public:
     return endsWith(arr, N);
   }
   bool endsWith(unsigned long ucs4) const;
+
+  int parseInt(int &position, int *digits) const;
+  int skipWhitespace(int &position) const;
+
+  String substring(int position) const;
+  String substring(int position, int length) const;
 
 private:
   friend class StringBuilder;

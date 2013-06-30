@@ -36,14 +36,18 @@ namespace TimedText
 class WebVTTParser
 {
 public:
+  static const double MalformedTime = -1;
+  static const double SecondsPerHour = 3600;
+  static const double SecondsPerMinute = 60;
+  static const double SecondsPerMillisecond = 0.001;
   enum ParseState {
-    Initial,
-    Header,
+        Initial,
+        Header,
 
-    Id,
-    TimingsAndSettings,
-    CueText,
-    BadCue
+        Id,
+        TimingsAndSettings,
+        CueText,
+        BadCue
   };
   enum Status {
     Finished,
@@ -82,12 +86,26 @@ private:
   bool parsePostHeaderTag();
   bool parseHeaderComment();
 
+  void dispatchCue();
+  void dropCue();
+
+  ParseState collectTimingsAndSettings(const String &line);
+  double collectTimeStamp(const String &line, int &position);
+
+  ParseState state;
   Buffer &buffer;
   String line;
-  ParseState state;
+
   Status status;
   BOMStatus withBOM : 2;
   HeaderStatus headerStatus : 2;
+
+  // Current Cue:
+  String currentId;
+  String currentSettings;
+  StringBuilder currentCueText;
+  double currentStartTime;
+  double currentEndTime;
 };
 
 } // TimedText

@@ -54,10 +54,25 @@ public:
   ~StringBuilder();
 
   bool toString(String &result) const;
-  int length() const;
-  int size() const;
-  int capacity() const;
-  const char *text() const;
+  inline int length() const {
+    return d->length;
+  }
+  inline int size() const {
+    return d->length;
+  }
+
+  inline bool isEmpty() const {
+    return d->length == 0;
+  }
+
+  inline int capacity() const {
+    return d->alloc;
+  }
+
+  inline const char *text() const {
+    return d->text;
+  }
+
   void clear();
 
   char operator[](int i) const
