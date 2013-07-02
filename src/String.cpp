@@ -26,6 +26,7 @@
 //
 
 #include <TimedText/String.h>
+#include "Atomic.h"
 #include <cstring>
 #include <climits>
 #include <cstdlib>
@@ -33,14 +34,23 @@
 namespace TimedText
 {
 
-String::Data String::sharedEmpty = { 1, 0, { '\0' } };
-String::Data String::sharedNull = { 1, 0, { '\0' } };
+struct String::Data
+{
+  AtomicInt ref;
+  int length;
+  char text[1];
+};
+
+String::Data sharedEmpty = { AtomicInt(1), 0, { '\0' } };
+String::Data sharedNull = { AtomicInt(1), 0, { '\0' } };
+
+String::String() : d(&sharedEmpty) { d->ref.ref(); }
 
 String::String(const char *utf8, int len)
 {
   if(!utf8) {
     d = &sharedNull; 
-    ++d->ref;
+    d->ref.ref();
   } else {
     if(len < 0)
       len = ::strlen(utf8);
@@ -55,7 +65,7 @@ String::String(const char *utf8, int len)
         d->ref = 0;
         Unicode::toValidUtf8(d->text, alloc+1, d->length, utf8, len);
       }
-      ++d->ref;
+      d->ref.ref();
     }
   }
 }
@@ -63,12 +73,12 @@ String::String(const char *utf8, int len)
 String::String(const String &str)
   : d(str.d)
 {
-  d->ref++;
+  d->ref.ref();
 }
 
 String::~String()
 {
-  if(!--d->ref)
+  if(!d->ref.deref())
     ::free(d);
 }
 
@@ -77,8 +87,8 @@ String::operator=(const String &str)
 {
   Data *x = d;
   d = str.d;
-  ++d->ref;
-  if(!--x->ref)
+  d->ref.ref();
+  if(!x->ref.deref())
     ::free(x);
   return *this;
 }
@@ -95,9 +105,21 @@ String::operator+=(const String &str)
   x->text[n] = '\0';
   Data *y = d;
   d = x;
-  if(!--y->ref)
+  if(!y->ref.deref())
     ::free(y);
   return *this;
+}
+
+int
+String::length() const
+{
+  return d->length;
+}
+
+const char *
+String::text() const
+{
+  return d->text;
 }
 
 void
@@ -105,8 +127,8 @@ String::clear()
 {
   Data *old = d;
   d = &sharedEmpty;
-  ++d->ref;
-  if(!--old->ref)
+  d->ref.ref();
+  if(!old->ref.deref())
     ::free(old);
 }
 

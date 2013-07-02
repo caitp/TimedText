@@ -28,18 +28,12 @@
 #ifndef __TimedText_Timestamp__
 #define __TimedText_Timestamp__
 
-#if !defined(_MSC_VER) || _MSC_VER > 1500
-#  include <stdint.h>
-#endif
+#include <TimedText/Types.h>
 
 namespace TimedText
 {
 
-#if !defined(_MSC_VER) || _MSC_VER > 1500
-  typedef ::int64_t Milliseconds;
-#else
-  typedef __int64 Milliseconds;
-#endif
+typedef int64 Milliseconds;
 
 static const Milliseconds MalformedTimestamp = -1;
 

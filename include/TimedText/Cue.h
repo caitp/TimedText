@@ -43,6 +43,8 @@ public:
     WebVTTCue = 0,
     TTMLCue,
   };
+
+  // WebVTT constants
   enum Vertical
   {
     Horizontal = 0,
@@ -69,25 +71,15 @@ public:
   Cue(Type type = WebVTTCue);
   Cue(Type type, Timestamp startTime, Timestamp endTime,
       const String &id = String(), const String &text = String());
+  Cue(const Cue &other);
   ~Cue();
 
-  inline Type type() const {
-    return _type;
-  }
+  Cue &operator=(const Cue &other);
 
-  inline String id() const {
-  	return _id;
-  }
-
-  // TTML: begin
-  inline Timestamp startTime() const {
-  	return _startTime;
-  }
-
-  // TTML: end (or begin + dur)
-  inline Timestamp endTime() const {
-  	return _endTime;
-  }
+  Type type() const;
+  String id() const;
+  Timestamp startTime() const;
+  Timestamp endTime() const;
 
   void setId(const String &id);
   void setText(const String &text);
@@ -95,30 +87,13 @@ public:
   void setEndTime(const Timestamp &ts);
   void applySettings(const String &settings);
 
-  // WebVTT CueSettings
-  inline bool snapToLines() const {
-    return _snapToLines;
-  }
-
-  inline int line() const {
-    return _line;
-  }
-
-  inline int size() const {
-    return _size;
-  }
-
-  inline int position() const {
-    return _position;
-  }
-
-  inline Vertical vertical() const {
-    return _vertical;
-  }
-
-  inline Align align() const {
-    return _align;
-  }
+  // WebVTT-specific API
+  bool snapToLines() const;
+  int line() const;
+  int size() const;
+  int position() const;
+  Vertical vertical() const;
+  Align align() const;
 
   bool setLine(int line, bool snapToLines);
   bool setSize(int size);
@@ -134,19 +109,9 @@ public:
 
   void resetCueSettings();
 
+  struct Data;
 protected:
-  Type _type;
-  String _id;
-  String _text;
-  Timestamp _startTime;
-  Timestamp _endTime;
-  bool _dirty;
-  bool _snapToLines;
-  int _line;
-  int _size : 8;
-  int _position : 8;
-  Vertical _vertical : 8;
-  Align _align : 8;
+  Data *d;
 };
 
 }

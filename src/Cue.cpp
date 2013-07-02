@@ -26,53 +26,154 @@
 //
 
 #include <TimedText/Cue.h>
-
+#include "Atomic.h"
 namespace TimedText
 {
 
-Cue::Cue(Type type)
-  : _type(type)
+struct Cue::Data
 {
+  AtomicInt ref;
+  Type type;
+  String id;
+  String text;
+  Timestamp startTime;
+  Timestamp endTime;
+  bool dirty;
+  bool snapToLines;
+  int line;
+  int size : 8;
+  int position : 8;
+  Vertical vertical : 8;
+  Align align : 8;
+};
+
+Cue::Cue(Type type)
+{
+  d = new Data();
+  d->ref = 1;
   resetCueSettings();
 }
 
 Cue::Cue(Type type, Timestamp startTime, Timestamp endTime,
          const String &id, const String &text)
-  : _type(type), _startTime(startTime), _endTime(endTime), _id(id), _text(text)
 {
-  _dirty = !_text.isEmpty();
+  d = new Data();
+  d->ref = 1;
+  d->type = type;
+  d->startTime = startTime;
+  d->endTime = endTime;
+  d->id = id;
+  d->text = text;
+  d->dirty = !text.isEmpty();
   resetCueSettings();
+}
+
+Cue::Cue(const Cue &other)
+  : d(other.d)
+{
+  d->ref.ref();
 }
 
 Cue::~Cue()
 {
+  if(!d->ref.deref())
+    delete d;
+}
+
+Cue &Cue::operator=(const Cue &other)
+{
+  Data *x = d;
+  d = other.d;
+  d->ref.ref();
+  if(!x->ref.deref())
+    delete x;
+  return *this;
+}
+
+Cue::Type
+Cue::type() const
+{
+  return d->type;
+}
+
+String
+Cue::id() const
+{
+  return d->id;
+}
+
+Timestamp
+Cue::startTime() const
+{
+  return d->startTime;
+}
+
+Timestamp
+Cue::endTime() const
+{
+  return d->endTime;
 }
 
 void
 Cue::setId(const String &id)
 {
-  _id = id;
+  d->id = id;
 }
 
 void
 Cue::setText(const String &text)
 {
-  // String comparison might be cheaper than reconstructing nodes, so
-  // maybe setting the dirty flag should be a bit more involved than this
-  _text = text;
-  _dirty = !_text.isEmpty();
+  d->text = text;
+  d->dirty = true;
 }
 
 void
 Cue::setStartTime(const Timestamp &ts)
 {
-  _startTime = ts;
+  d->startTime = ts;
 }
 
 void
 Cue::setEndTime(const Timestamp &ts)
 {
-  _endTime = ts;
+  d->endTime = ts;
+}
+
+// WebVTT CueSettings
+bool
+Cue::snapToLines() const
+{
+  return d->snapToLines;
+}
+
+int
+Cue::line() const
+{
+  return d->line;
+}
+
+int
+Cue::size() const
+{
+  return d->size;
+}
+
+int
+Cue::position() const
+{
+  return d->position;
+}
+
+Cue::Vertical
+Cue::vertical() const
+{
+  return d->vertical;
+}
+
+Cue::Align
+Cue::align() const
+{
+  return d->align;
 }
 
 void
@@ -120,12 +221,12 @@ bool
 Cue::setLine(int line, bool snapToLines)
 {
   if(snapToLines) {
-    _line = line;
-    _snapToLines = snapToLines;
+    d->line = line;
+    d->snapToLines = snapToLines;
     return true;
   } else if(line >= 0 && line <= 100) {
-    _line = line;
-    _snapToLines = snapToLines;
+    d->line = line;
+    d->snapToLines = snapToLines;
     return true;
   } else {
     return false;
@@ -136,7 +237,7 @@ bool
 Cue::setSize(int size)
 {
   if(size >= 0 && size <= 100) {
-    _size = size;
+    d->size = size;
     return true;
   }
   return false;
@@ -146,7 +247,7 @@ bool
 Cue::setPosition(int position)
 {
   if(position >= 0 && position <= 100) {
-    _position = position;
+    d->position = position;
     return true;
   }
   return false;
@@ -156,7 +257,7 @@ bool
 Cue::setVertical(Vertical vertical)
 {
   if(vertical >= Horizontal && vertical <= VerticalRightToLeft) {
-    _vertical = vertical;
+    d->vertical = vertical;
     return true;
   }
   return false;
@@ -166,7 +267,7 @@ bool
 Cue::setAlign(Align align)
 {
   if(align >= Start && align <= Right) {
-    _align = align;
+    d->align = align;
     return true;
   }
   return false;
@@ -288,14 +389,14 @@ Cue::setVertical(const char *value, int len)
   if(len < 0)
     len = ::strlen(value);
   if(!len) {
-    _vertical = Horizontal;
+    d->vertical = Horizontal;
     return true;
   } else if(len == 2) {
     if(!::strcmp("lr", value)) {
-      _vertical = VerticalLeftToRight;
+      d->vertical = VerticalLeftToRight;
       return true;
     } else if(!::strcmp("rl", value)) {
-      _vertical = VerticalRightToLeft;
+      d->vertical = VerticalRightToLeft;
       return true;
     }
   }
@@ -321,7 +422,7 @@ Cue::setAlign(const char *value, int len)
   };
   for(int i=0; i<sizeof(values)/sizeof(*values); ++i) {
     if(!::strcmp(value,values[i])) {
-      _align = static_cast<Align>(i);
+      d->align = static_cast<Align>(i);
       return true;
     }
   }

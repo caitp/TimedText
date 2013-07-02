@@ -42,7 +42,7 @@ class StringBuilder;
 class String
 {
 public:
-  String() : d(&sharedEmpty) { ++d->ref; }
+  String();
 	explicit String(const char *utf8, int len=-1);
   ~String();
 	String(const String &str);
@@ -51,25 +51,21 @@ public:
 
 	// Returns true if the string is empty or NULL.
 	inline bool isEmpty() const {
-    return d->length == 0;
+    return length() == 0;
   }
 
-  inline int length() const {
-    return d->length;
-  }
+  int length() const;
 
   inline int size() const {
-    return d->length;
+    return length();
   }
 
-	inline const char *text() const {
-		return d->text;
-	}
+	const char *text() const;
 
   inline char operator[](int i) const {
-    if(i < 0 || i >= d->length)
+    if(i < 0 || i >= length())
       return '\0';
-    return d->text[i];
+    return text()[i];
   }
 
   void clear();
@@ -132,24 +128,17 @@ public:
   }
   int skipUntilWhitespace(int &position) const;
 
+  struct Data;
+
 private:
   friend class StringBuilder;
   static int findString(const char *bucket, int bucket_len, int from,
                         const char *needle, int needle_len);
   static int findStringBoyerMoore(const char *bucket, int bucket_len, int from,
                                   const char *needle, int needle_len);
-	struct Data
-	{
-		int ref;
-		int length;
-		char text[1];
-	};
-	Data *d;
-  static Data sharedEmpty;
-  static Data sharedNull;
-};
 
-bool isAsciiDigit(char c);
+  Data *d;
+};
 
 } // TimedText
 
