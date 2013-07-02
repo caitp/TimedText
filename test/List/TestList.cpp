@@ -34,7 +34,8 @@ static int testPrimitiveList_run = 1;
 template<typename T>
 void testPrimitiveList()
 {
-  const std::string name = "in testPrimitiveList<" + std::string(TypeInfo<T>::name()) + ">";
+  const std::string name = "in testPrimitiveList<" + 
+                           std::string(TypeInfo<T>::name()) + ">";
   List<T> list;
   int run = testPrimitiveList_run;
 
@@ -85,14 +86,14 @@ void testPrimitiveList()
 
 TEST(List,Primitive)
 {
-  testPrimitiveList<int>();
+  /*testPrimitiveList<int>();
   testPrimitiveList<uint>();
   testPrimitiveList<char>();
   testPrimitiveList<uchar>();
   testPrimitiveList<short>();
-  testPrimitiveList<ushort>();
-  testPrimitiveList<long>();
-  testPrimitiveList<ulong>();
+  testPrimitiveList<ushort>();*/
+  //testPrimitiveList<long>();
+  //testPrimitiveList<ulong>();
   testPrimitiveList<int64>();
   testPrimitiveList<uint64>();
 }

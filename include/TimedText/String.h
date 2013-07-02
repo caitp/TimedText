@@ -29,6 +29,7 @@
 #ifndef __TimedText_String__
 #define __TimedText_String__
 
+#include <TimedText/Types.h>
 #include <TimedText/Char.h>
 #include <TimedText/Unicode.h>
 #include <cstring>
@@ -42,9 +43,11 @@ class StringBuilder;
 class String
 {
 public:
+  struct Data;
   String();
 	explicit String(const char *utf8, int len=-1);
   ~String();
+  String(Data &d);
 	String(const String &str);
 	String &operator=(const String &str);
   String &operator+=(const String &str);
@@ -61,6 +64,10 @@ public:
   }
 
 	const char *text() const;
+
+  inline operator const char *() const {
+    return text();
+  }
 
   inline char operator[](int i) const {
     if(i < 0 || i >= length())
@@ -128,8 +135,6 @@ public:
   }
   int skipUntilWhitespace(int &position) const;
 
-  struct Data;
-
 private:
   friend class StringBuilder;
   static int findString(const char *bucket, int bucket_len, int from,
@@ -139,6 +144,8 @@ private:
 
   Data *d;
 };
+
+TT_DECLARE_TYPEINFO(String, TT_MOVABLE_TYPE);
 
 } // TimedText
 

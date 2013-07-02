@@ -26,7 +26,7 @@
 //
 
 #include <TimedText/Cue.h>
-#include "Atomic.h"
+#include "StringData.h"
 namespace TimedText
 {
 
@@ -47,11 +47,20 @@ struct Cue::Data
   Align align : 8;
 };
 
-Cue::Cue(Type type)
+static String::Data emptyId = { AtomicInt(1), 0, { '\0' } };
+static String::Data emptyBody = { AtomicInt(1), 0, { '\0' } };
+
+static Cue::Data emptyCue = {
+  AtomicInt(1), Cue::EmptyCue, emptyId, emptyBody, MalformedTimestamp,
+  MalformedTimestamp, false, Cue::defaultSnapToLines, Cue::defaultLine,
+  Cue::defaultSize, Cue::defaultPosition, Cue::defaultVertical,
+  Cue::defaultAlign
+};
+
+Cue::Cue()
 {
-  d = new Data();
-  d->ref = 1;
-  resetCueSettings();
+  d = &emptyCue;
+  d->ref.ref();
 }
 
 Cue::Cue(Type type, Timestamp startTime, Timestamp endTime,
@@ -102,6 +111,12 @@ Cue::id() const
   return d->id;
 }
 
+String
+Cue::text() const
+{
+  return d->text;
+}
+
 Timestamp
 Cue::startTime() const
 {
@@ -117,12 +132,16 @@ Cue::endTime() const
 void
 Cue::setId(const String &id)
 {
+  if(type() == EmptyCue)
+    return;
   d->id = id;
 }
 
 void
 Cue::setText(const String &text)
 {
+  if(type() == EmptyCue)
+    return;
   d->text = text;
   d->dirty = true;
 }
@@ -130,12 +149,16 @@ Cue::setText(const String &text)
 void
 Cue::setStartTime(const Timestamp &ts)
 {
+  if(type() == EmptyCue)
+    return;
   d->startTime = ts;
 }
 
 void
 Cue::setEndTime(const Timestamp &ts)
 {
+  if(type() == EmptyCue)
+    return;
   d->endTime = ts;
 }
 
@@ -179,6 +202,8 @@ Cue::align() const
 void
 Cue::applySettings(const String &settings)
 {
+  if(type() == EmptyCue)
+    return;
   char word[0x200] = "";
   int position = 0;
   while(position < settings.length()) {
@@ -220,6 +245,8 @@ Cue::applySettings(const String &settings)
 bool
 Cue::setLine(int line, bool snapToLines)
 {
+  if(type() == EmptyCue)
+    return false;
   if(snapToLines) {
     d->line = line;
     d->snapToLines = snapToLines;
@@ -236,6 +263,8 @@ Cue::setLine(int line, bool snapToLines)
 bool
 Cue::setSize(int size)
 {
+  if(type() == EmptyCue)
+    return false;
   if(size >= 0 && size <= 100) {
     d->size = size;
     return true;
@@ -246,6 +275,8 @@ Cue::setSize(int size)
 bool
 Cue::setPosition(int position)
 {
+  if(type() == EmptyCue)
+    return false;
   if(position >= 0 && position <= 100) {
     d->position = position;
     return true;
@@ -256,6 +287,8 @@ Cue::setPosition(int position)
 bool
 Cue::setVertical(Vertical vertical)
 {
+  if(type() == EmptyCue)
+    return false;
   if(vertical >= Horizontal && vertical <= VerticalRightToLeft) {
     d->vertical = vertical;
     return true;
@@ -266,6 +299,8 @@ Cue::setVertical(Vertical vertical)
 bool
 Cue::setAlign(Align align)
 {
+  if(type() == EmptyCue)
+    return false;
   if(align >= Start && align <= Right) {
     d->align = align;
     return true;
@@ -277,6 +312,8 @@ Cue::setAlign(Align align)
 bool
 Cue::setLine(const char *value, int len)
 {
+  if(type() == EmptyCue)
+    return false;
   if(!value)
     return false;
   if(len < 0)
@@ -316,6 +353,8 @@ Cue::setLine(const char *value, int len)
 bool
 Cue::setSize(const char *value, int len)
 {
+  if(type() == EmptyCue)
+    return false;
   if(!value)
     return false;
   if(len < 0)
@@ -350,6 +389,8 @@ Cue::setSize(const char *value, int len)
 bool
 Cue::setPosition(const char *value, int len)
 {
+  if(type() == EmptyCue)
+    return false;
   if(!value)
     return false;
   if(len < 0)
@@ -384,6 +425,8 @@ Cue::setPosition(const char *value, int len)
 bool
 Cue::setVertical(const char *value, int len)
 {
+  if(type() == EmptyCue)
+    return false;
   if(!value)
     return false;
   if(len < 0)
@@ -406,6 +449,8 @@ Cue::setVertical(const char *value, int len)
 bool
 Cue::setAlign(const char *value, int len)
 {
+  if(type() == EmptyCue)
+    return false;
   if(!value)
     return false;
   if(len < 0)
@@ -432,6 +477,8 @@ Cue::setAlign(const char *value, int len)
 void
 Cue::resetCueSettings()
 {
+  if(type() == EmptyCue)
+    return;
   // 22. Let cue's text track cue writing direction be horizontal.
   setVertical(defaultVertical);
   // 23. Let cue's text track cue snap-to-lines flag be true.

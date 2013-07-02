@@ -40,7 +40,8 @@ class Cue
 public:
   enum Type
   {
-    WebVTTCue = 0,
+    EmptyCue = 0,
+    WebVTTCue,
     TTMLCue,
   };
 
@@ -68,7 +69,7 @@ public:
   static const int defaultSize = 100;
   static const Align defaultAlign = Middle;
 
-  Cue(Type type = WebVTTCue);
+  Cue();
   Cue(Type type, Timestamp startTime, Timestamp endTime,
       const String &id = String(), const String &text = String());
   Cue(const Cue &other);
@@ -78,6 +79,7 @@ public:
 
   Type type() const;
   String id() const;
+  String text() const;
   Timestamp startTime() const;
   Timestamp endTime() const;
 
@@ -113,6 +115,8 @@ public:
 protected:
   Data *d;
 };
+
+TT_DECLARE_TYPEINFO(Cue, TT_MOVABLE_TYPE);
 
 }
 

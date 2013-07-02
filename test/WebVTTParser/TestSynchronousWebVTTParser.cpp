@@ -121,3 +121,49 @@ TEST(SynchronousWebVTTParser, CollectTimingsAndSettings)
   testCollectTimingsAndSettings("00:35.555  --->  00:35.666", false, 35.555, -1);
   testCollectTimingsAndSettings("00:35.555  -->>  00:35.666", false, 35.555, -1);
 }
+
+const char simpleWebVTTDocument[] =
+"WEBVTT\n"
+"\n"
+"00:00:00.000 --> 00:00:04.667\n" // 0.000 --> 4.667
+"Cue #1\n"
+"\n"
+"00:00:09.000 --> 00:00:14.324\n" // 9.000 --> 14.324
+"Cue #2\n";
+
+TEST(SynchronousWebVTTParser,DispatchCues)
+{
+  class TestClient : public Client
+  {
+  public:
+    TestClient() : timesDispatched(0) {}
+    void cuesAvailable() { ++timesDispatched; }
+    int timesDispatched;
+  };
+  TestClient client;
+  SynchronousBuffer buffer;
+  WebVTTParser parser(buffer, &client);
+  EXPECT_TRUE(buffer.refill(simpleWebVTTDocument,true));
+  EXPECT_TRUE(parser.parse());
+  EXPECT_EQ(2, client.timesDispatched);
+}
+
+TEST(SynchronousWebVTTParser,RetrieveCues)
+{
+  SynchronousBuffer buffer;
+  WebVTTParser parser(buffer);
+  EXPECT_TRUE(buffer.refill(simpleWebVTTDocument,true));
+  EXPECT_TRUE(parser.parse());
+  List<Cue> cues;
+  parser.parsedCues(cues);
+  EXPECT_EQ(2, cues.size());
+  Cue cue1, cue2;
+  EXPECT_TRUE(cues.itemAt(0,cue1));
+  EXPECT_TRUE(cues.itemAt(1,cue2));
+  EXPECT_EQ(0.000, cue1.startTime().toSeconds());
+  EXPECT_EQ(4.667, cue1.endTime().toSeconds());
+  EXPECT_STREQ("Cue #1", cue1.text());
+  EXPECT_EQ(9.000, cue2.startTime().toSeconds());
+  EXPECT_EQ(14.324, cue2.endTime().toSeconds());
+  EXPECT_STREQ("Cue #2", cue2.text());
+}

@@ -31,6 +31,8 @@
 #include <TimedText/Buffer.h>
 #include <TimedText/Timestamp.h>
 #include <TimedText/Client.h>
+#include <TimedText/Cue.h>
+#include <TimedText/List.h>
 
 namespace TimedText
 {
@@ -77,6 +79,11 @@ public:
     return c == ' ' || c == '\t' || c == '\n' || c == '\r';
   }
 
+  // Return (and clear) the list of parsed cues.
+  // Warning, this will overwrite anything present in result! Do not
+  // expect the cues to be appended to it!
+  void parsedCues(List<Cue> &result);
+
 private:
   bool parseHeader();
   bool parseBOM();
@@ -105,6 +112,7 @@ private:
   StringBuilder currentCueText;
   Timestamp currentStartTime;
   Timestamp currentEndTime;
+  List<Cue> currentCues;
 };
 
 } // TimedText

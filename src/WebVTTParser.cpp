@@ -42,6 +42,7 @@ WebVTTParser::WebVTTParser(Buffer &buf, Client *_client)
 
 WebVTTParser::~WebVTTParser()
 {
+  currentCues.clear();
 }
 
 bool
@@ -284,6 +285,15 @@ WebVTTParser::collectTimeStamp(const String &line, int &position)
 void
 WebVTTParser::dispatchCue()
 {
+  String text;
+  // If this allocation fails, we have no way of notifying the user,
+  // currently!
+  currentCueText.toString(text);
+  Cue cue(Cue::WebVTTCue, currentStartTime, currentEndTime,
+          currentId, text);
+  cue.applySettings(currentSettings);
+  currentCues.push(cue);
+
   // TODO:
   // Create Cue object and send it off to the client
   currentSettings.clear();
@@ -321,7 +331,7 @@ WebVTTParser::parse(Status *pstatus)
 retry:
   if(!buffer.getline(line)) {
     status = Unfinished;
-    if(*pstatus)
+    if(pstatus)
       *pstatus = status;
     return false;
   }
@@ -371,6 +381,10 @@ retry:
         if(!currentCueText.isEmpty())
           currentCueText.append('\n');
         currentCueText.append(line);
+
+        // If this was the last line in the buffer, we need to dispatch.
+        if(buffer.eof())
+          state == BadCue ? dropCue() : dispatchCue();
       }
       break;
   }
@@ -385,6 +399,13 @@ retry:
   if(pstatus)
     *pstatus = status;
   return status == Finished;
+}
+
+void
+WebVTTParser::parsedCues(List<Cue> &result)
+{
+  result = currentCues;
+  currentCues.clear();
 }
 
 } // TimedText

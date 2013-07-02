@@ -308,4 +308,11 @@ ListData::undo_push()
   --d->end;
 }
 
+void
+ListData::kill()
+{
+  if(d->ref == 0)
+    ::free(d);
+}
+
 } // TimedText

@@ -25,8 +25,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#include <TimedText/String.h>
-#include "Atomic.h"
+#include "StringData.h"
 #include <cstring>
 #include <climits>
 #include <cstdlib>
@@ -34,17 +33,12 @@
 namespace TimedText
 {
 
-struct String::Data
-{
-  AtomicInt ref;
-  int length;
-  char text[1];
-};
-
 String::Data sharedEmpty = { AtomicInt(1), 0, { '\0' } };
 String::Data sharedNull = { AtomicInt(1), 0, { '\0' } };
 
 String::String() : d(&sharedEmpty) { d->ref.ref(); }
+
+String::String(Data &dd) : d(&dd) { d->ref.ref(); }
 
 String::String(const char *utf8, int len)
 {

@@ -53,6 +53,8 @@
 namespace TimedText
 {
 
+// ListData is PRIVATE, and is only exposed to allow typed List operations to be
+// implemented entirely in the header file. Don't break it!
 struct ListData
 {
   struct Data;
@@ -82,6 +84,7 @@ struct ListData
   bool deref();
   bool unique() const;
 
+  void kill();
   void undo_unshift();
   void undo_push();
 };
@@ -109,13 +112,13 @@ public:
     d = other.d;
     p.ref();
     if(!x.deref()) {
-      free(x.d);
+      freeData(x.d);
     }
     return *this;
   }
   ~List() {
     if(d && !p.deref()) {
-      free(d);
+      freeData(d);
     }
   }
 
@@ -469,19 +472,19 @@ private:
     ListData::Data *x = p.detach_grow(&i, c);
     if(!nodeCopy(reinterpret_cast<Node *>(p.begin()),
                  reinterpret_cast<Node *>(p.begin() + i), n)) {
-      ::free(d);
+      freeData(d);
       d = x;
       return 0;
     }
     if(!nodeCopy(reinterpret_cast<Node *>(p.begin() + i + c),
                  reinterpret_cast<Node *>(p.end()), n + i)) {
-      ::free(d);
+      freeData(d);
       d = x;
       return 0;
     }
     ListData tmp = { x };
     if(!tmp.deref())
-      ::free(x);
+      freeData(x);
 
     return reinterpret_cast<Node *>(p.begin() + i);
   }
@@ -493,18 +496,26 @@ private:
       return false;
     if(!nodeCopy(reinterpret_cast<Node *>(p.begin()),
                  reinterpret_cast<Node *>(p.end()), n)) {
-      ::free(d);
+      freeData(d);
       d = x;
       return false;
     }
     ListData tmp = { x };
     if(!tmp.deref())
-      ::free(x);
+      freeData(x);
     return true;
   }
 
   inline bool detachHelper() {
     return detachHelper(p.alloc());
+  }
+
+  void freeData(ListData::Data *x) {
+    ListData tmp = { x };
+    nodeDestruct(reinterpret_cast<Node *>(tmp.begin()),
+                 reinterpret_cast<Node *>(tmp.end()));
+
+    tmp.kill();
   }
 };
 
