@@ -46,4 +46,7 @@ uninstall:
 
 clean:
 	cd $topsrcdir && ./waf --out=$topblddir clean
+
+lcov:
+	cd $topsrcdir && ./waf --out=$topblddir check --alltests --with-lcov
 DELIM
