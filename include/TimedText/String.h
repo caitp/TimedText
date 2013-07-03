@@ -57,6 +57,8 @@ public:
     return length() == 0;
   }
 
+  bool isNull() const;
+
   int length() const;
 
   inline int size() const {
@@ -75,7 +77,10 @@ public:
     return text()[i];
   }
 
-  void clear();
+  inline void clear() {
+    if(!isNull())
+      *this = String();
+  }
 
   int indexOf(const char *text, int len=-1, int from = 0) const;
   inline int indexOf(const String &str, int from = 0) const {
@@ -143,6 +148,10 @@ private:
                                   const char *needle, int needle_len);
 
   Data *d;
+  static Data sharedNull;
+  static Data sharedEmpty;
+  void freeData(Data *x);
+  bool realloc(int size);
 };
 
 TT_DECLARE_TYPEINFO(String, TT_MOVABLE_TYPE);

@@ -33,35 +33,36 @@
 namespace TimedText
 {
 
-String::Data sharedEmpty = { AtomicInt(1), 0, { '\0' } };
-String::Data sharedNull = { AtomicInt(1), 0, { '\0' } };
+String::Data String::sharedEmpty = { AtomicInt(1), 0, { '\0' } };
+String::Data String::sharedNull = { AtomicInt(1), 0, { '\0' } };
 
-String::String() : d(&sharedEmpty) { d->ref.ref(); }
+String::String() : d(&sharedNull) { d->ref.ref(); }
 
 String::String(Data &dd) : d(&dd) { d->ref.ref(); }
 
 String::String(const char *utf8, int len)
 {
-  if(!utf8) {
+  if(!utf8)
     d = &sharedNull; 
-    d->ref.ref();
-  } else {
+  else {
     if(len < 0)
       len = ::strlen(utf8);
-    if(len == 0) {
+    if(len == 0)
       d = &sharedEmpty;
-    } else {
+    else {
       int alloc = Unicode::utf8Length(utf8,len);
       d = static_cast<Data *>(::malloc(sizeof(Data) + alloc));
-      if(!d) {
+      if(!d)
         d = &sharedNull;
-      } else {
+      else {
         d->ref = 0;
-        Unicode::toValidUtf8(d->text, alloc+1, d->length, utf8, len);
+        d->length = 0;
+        Unicode::toValidUtf8(d->text, alloc + 1, d->length, utf8, len);
+        d->text[d->length] = '\0';
       }
-      d->ref.ref();
     }
   }
+  d->ref.ref();
 }
 
 String::String(const String &str)
@@ -70,37 +71,66 @@ String::String(const String &str)
   d->ref.ref();
 }
 
+void
+String::freeData(Data *x)
+{
+  if(x->ref == 0)
+    ::free(x);
+}
+
+bool
+String::realloc(int size)
+{
+  if(d->ref != 1) {
+    Data *x = static_cast<Data *>(::malloc(sizeof(Data) + size));
+    if(!x)
+      return false;
+    x->length = size < d->length ? size : d->length;
+    ::memcpy(x->text, d->text, x->length);
+    x->text[x->length] = '\0';
+    x->ref = 1;
+    if(!d->ref.deref())
+      freeData(d);
+    d = x;
+  } else {
+    Data *x = static_cast<Data *>(::realloc(d, sizeof(Data) + size));
+    if(!x)
+      return false;
+    d = x;
+  }
+  return true;
+}
+
 String::~String()
 {
   if(!d->ref.deref())
-    ::free(d);
+    freeData(d);
 }
 
 String &
-String::operator=(const String &str)
+String::operator=(const String &other)
 {
-  Data *x = d;
-  d = str.d;
-  d->ref.ref();
-  if(!x->ref.deref())
-    ::free(x);
+  other.d->ref.ref();
+  if(!d->ref.deref())
+    freeData(d);
+  d = other.d;
   return *this;
 }
 
 String &
-String::operator+=(const String &str)
+String::operator+=(const String &other)
 {
-  int n = size() + str.size();
-  Data *x = static_cast<Data *>(::malloc(sizeof(Data) + n));
-  x->ref = 1;
-  x->length = n;
-  ::memcpy(x->text, d->text, d->length);
-  ::memcpy(x->text + d->length, str.text(), str.length());;
-  x->text[n] = '\0';
-  Data *y = d;
-  d = x;
-  if(!y->ref.deref())
-    ::free(y);
+  if(other.d != &sharedNull) {
+    if(d == &sharedNull)
+      operator=(other);
+    else {
+      if(!realloc(d->length + other.d->length))
+        return *this;
+      ::memcpy(d->text + d->length, other.d->text, other.d->length);
+      d->length += other.d->length;
+      d->text[d->length] = '\0';
+    }
+  }
   return *this;
 }
 
@@ -110,20 +140,15 @@ String::length() const
   return d->length;
 }
 
+bool
+String::isNull() const {
+  return d == &sharedEmpty;
+}
+
 const char *
 String::text() const
 {
   return d->text;
-}
-
-void
-String::clear()
-{
-  Data *old = d;
-  d = &sharedEmpty;
-  d->ref.ref();
-  if(!old->ref.deref())
-    ::free(old);
 }
 
 int
@@ -282,9 +307,9 @@ bool
 String::collectWord(int &position, char out[], int max) const
 {
   int n = 0;
-  if(position < 0 || position >= length() || max <= 0)
+  if(isEmpty() || position < 0 || position >= d->length || max <= 0)
     return false;
-  for( ; position < length() && !Char::isHtml5Space(d->text[position]);
+  for( ; position < d->length && !Char::isHtml5Space(d->text[position]);
          out[n++] = d->text[position++]);
   if(n < max) {
     out[n] = '\0';

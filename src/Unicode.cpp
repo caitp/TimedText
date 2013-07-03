@@ -195,9 +195,6 @@ Unicode::toValidUtf8(char *out, int alloc, int &olen,
       return false;
     }
   }
-  // Null-terminate if possible.
-  if(olen<alloc)
-    out[olen] = '\0';
   return true;
 }
 

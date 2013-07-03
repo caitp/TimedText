@@ -86,14 +86,14 @@ void testPrimitiveList()
 
 TEST(List,Primitive)
 {
-  /*testPrimitiveList<int>();
+  testPrimitiveList<int>();
   testPrimitiveList<uint>();
   testPrimitiveList<char>();
   testPrimitiveList<uchar>();
   testPrimitiveList<short>();
-  testPrimitiveList<ushort>();*/
-  //testPrimitiveList<long>();
-  //testPrimitiveList<ulong>();
+  testPrimitiveList<ushort>();
+  testPrimitiveList<long>();
+  testPrimitiveList<ulong>();
   testPrimitiveList<int64>();
   testPrimitiveList<uint64>();
 }

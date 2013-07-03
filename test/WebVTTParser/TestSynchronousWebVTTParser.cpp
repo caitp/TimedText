@@ -78,6 +78,7 @@ void testCollectTimingsAndSettings(const char *text, bool isOk,
                                                 : WebVTTParser::BadCue;
   String line;
   ++run;
+
   // The MalformedTimestamp value is -1 milliseconds, but it's simpler to
   // write -1.
   if(expectedStartTime < 0)

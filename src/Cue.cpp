@@ -57,9 +57,8 @@ static Cue::Data emptyCue = {
   Cue::defaultAlign
 };
 
-Cue::Cue()
+Cue::Cue() : d(&emptyCue)
 {
-  d = &emptyCue;
   d->ref.ref();
 }
 
@@ -67,6 +66,11 @@ Cue::Cue(Type type, Timestamp startTime, Timestamp endTime,
          const String &id, const String &text)
 {
   d = new Data();
+  if(!d) {
+    d = &emptyCue;
+    d->ref.ref();
+    return;
+  }
   d->ref = 1;
   d->type = type;
   d->startTime = startTime;
@@ -91,11 +95,13 @@ Cue::~Cue()
 
 Cue &Cue::operator=(const Cue &other)
 {
-  Data *x = d;
-  d = other.d;
-  d->ref.ref();
-  if(!x->ref.deref())
-    delete x;
+  if(d != other.d) {
+    Data *x = d;
+    d = other.d;
+    d->ref.ref();
+    if(!x->ref.deref())
+      delete x;
+  }
   return *this;
 }
 

@@ -266,28 +266,30 @@ Buffer::collectDigits(String &result, int *len)
 {
   if(eof())
     return false;
-  // This is way generous for a series of digits.
-  // StringBuilder might be a little bit expensive to
-  // use for this
-  char tmp[0x40] = "";
-  int n = 0;
+  bool ok;
+  StringBuilder collected(16,ok);
+  if(!ok)
+    return false;
   char c;
+  int n = 0;
   bool finished = false;
 
 retry:
   lock();
-  while(n < sizeof(tmp) && next(c)) {
+  while(!finished && next(c)) {
     if(Char::isAsciiDigit(c))
-      tmp[n++] = c;
+      if(!collected.append(c))
+        finished = true;
+      else
+        ++n;
     else {
       --i;
       finished = true;
-      break;
     }
   }
   unlock();
 
-  if(n >= sizeof(tmp) || eof())
+  if(eof())
     finished = true;
 
   if(!finished && isAsynchronous()) {
@@ -295,9 +297,12 @@ retry:
     goto retry;
   }
 
-  result += String(tmp,n);
   if(len)
     *len = n;
+  String tmp;
+  if(!collected.toString(tmp))
+    return false;
+  result += tmp;
   return finished;
 }
 
