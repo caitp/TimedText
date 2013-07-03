@@ -45,11 +45,17 @@ def options(ctx):
 	ctx.add_option('--drmemory-options',dest='drmemory_opts',
 		            help='DrMemory options for test-runner',
 		            action='store', default='-show_reachable -show_threads -batch')
+	ctx.add_option('--with-lcov',dest='lcov',
+		           help='Generate test coverage report using lcov (requires -ftest-coverage and -fprofile-arcs)',
+		           action='store_true', default=False)
+	ctx.add_option('--lcov-html', dest='lcov_html', help='Directory to store lcov HTML reports',
+		           action='store', default=False)
 def configure(ctx):
 	pass
 
 def build(ctx):
 	lib=[]
+	root=''
 	#ctx.options.all_tests = True
 	features=['cxx','cxxprogram']
 	cxxflags=ctx.env.CXXFLAGS
@@ -59,8 +65,28 @@ def build(ctx):
 		elif ctx.options.drmemory:
 			ctx.options.testcmd = ("drmemory %s --"%ctx.options.drmemory_opts) + " %s"
 
+	after_tests=None
 	if ctx.cmd in ['check']:
 		features.append('test')
+		if ctx.options.lcov:
+			from subprocess import call
+			root=ctx.top_dir
+			bld=ctx.bldnode.abspath()
+			baseinfo=os.path.join(bld,'base.info')
+			testinfo=os.path.join(bld,'test.info')
+			totalinfo=os.path.join(bld,'total.info')
+			call(['lcov','-b',root,'-d',bld,'-c', '-i', '-o', baseinfo])
+			def lcov_genhtml(ctx):
+				# Create test coverage data file
+				call(['lcov','-b',root,'-d',bld,'-c', '-o', testinfo])
+				if not ctx.options.lcov_html:
+					ctx.options.lcov_html=os.path.join(ctx.bldnode.abspath(),'testcoverage')
+				# Combine base and test coverage
+				call(['lcov','-a',baseinfo,'-a',testinfo,'-o',totalinfo])
+				call(['genhtml','-o',ctx.options.lcov_html,'-t',
+				      'TimedText Test Coverage', '-k', '-s', '--highlight', 
+				      '--legend', '--demangle-cpp',totalinfo])
+			after_tests=lcov_genhtml
 	if ctx.env.DEST_OS in ['linux']:
 		lib.append('pthread')
 	ctx.stlib(name='gtest',
@@ -152,5 +178,7 @@ def build(ctx):
 			if failed==0: Logs.pprint('GREEN',"[==========] ", label="Passed all tests")
 			else: Logs.pprint('GREEN',"[==========] ", label="Passed %d/%d tests" %(passed, passed+failed))
 			st=0 if failed==0 else 1
+			if after_tests:
+				after_tests(ctx)
 			sys.exit(st)
 	ctx.add_post_fun(colourify)
