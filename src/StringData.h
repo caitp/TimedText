@@ -25,32 +25,22 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#include "Utility.h"
+#ifndef __TimedText_StringData__
+#define __TimedText_StringData__
+
+#include <TimedText/String.h>
+#include "Atomic.h"
 
 namespace TimedText
 {
 
-int
-allocMore(int alloc, int extra)
+struct String::Data
 {
-  const int pageSize = 1 << 12; // 4 kB
-  int n;
-  alloc += extra;
-  if (alloc < 1<<6) {
-    // Small allocation
-    n = (1<<3) + ((alloc >>3) << 3);
-  } else  {
-    // Medium or large allocations
-    n = (alloc < pageSize) ? 1 << 3 : pageSize;
-    while (n < alloc) {
-      // Test for wrap around, do not exceed INT_MAX
-      if (n <= 0)
-        return INT_MAX;
-      n <<= 1;
-    }
-  }
-  return n - extra;
-}
-
+  AtomicInt ref;
+  int length;
+  char text[1];
+};
 
 } // TimedText
+
+#endif // __TimedText_StringData__

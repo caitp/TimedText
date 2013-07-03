@@ -29,6 +29,10 @@
 #define __TimedText_WebVTTParser__
 
 #include <TimedText/Buffer.h>
+#include <TimedText/Timestamp.h>
+#include <TimedText/Client.h>
+#include <TimedText/Cue.h>
+#include <TimedText/List.h>
 
 namespace TimedText
 {
@@ -36,10 +40,6 @@ namespace TimedText
 class WebVTTParser
 {
 public:
-  static const double MalformedTime = -1;
-  static const double SecondsPerHour = 3600;
-  static const double SecondsPerMinute = 60;
-  static const double SecondsPerMillisecond = 0.001;
   enum ParseState {
         Initial,
         Header,
@@ -65,7 +65,7 @@ public:
     PostTagHeader, // Character following 'WEBVTT'
     CommentHeader, // Post 'WEBVTT' tag comment
   };
-  WebVTTParser(Buffer &buffer);
+  WebVTTParser(Buffer &buffer, Client *client = 0);
   ~WebVTTParser();
 
   // Parse the document
@@ -79,6 +79,11 @@ public:
     return c == ' ' || c == '\t' || c == '\n' || c == '\r';
   }
 
+  // Return (and clear) the list of parsed cues.
+  // Warning, this will overwrite anything present in result! Do not
+  // expect the cues to be appended to it!
+  void parsedCues(List<Cue> &result);
+
 private:
   bool parseHeader();
   bool parseBOM();
@@ -90,9 +95,10 @@ private:
   void dropCue();
 
   ParseState collectTimingsAndSettings(const String &line);
-  double collectTimeStamp(const String &line, int &position);
+  Timestamp collectTimeStamp(const String &line, int &position);
 
   ParseState state;
+  Client *client;
   Buffer &buffer;
   String line;
 
@@ -104,8 +110,9 @@ private:
   String currentId;
   String currentSettings;
   StringBuilder currentCueText;
-  double currentStartTime;
-  double currentEndTime;
+  Timestamp currentStartTime;
+  Timestamp currentEndTime;
+  List<Cue> currentCues;
 };
 
 } // TimedText

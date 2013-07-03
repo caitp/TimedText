@@ -141,6 +141,8 @@ private:
   static Data empty;
 };
 
+TT_DECLARE_TYPEINFO(StringBuilder, TT_MOVABLE_TYPE);
+
 }
 
 #endif // __TimedText_StringBuilder__

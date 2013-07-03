@@ -25,32 +25,69 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#include "Utility.h"
+#include <TimedText/Timestamp.h>
 
 namespace TimedText
 {
 
-int
-allocMore(int alloc, int extra)
+bool
+Timestamp::Components::normalize()
 {
-  const int pageSize = 1 << 12; // 4 kB
-  int n;
-  alloc += extra;
-  if (alloc < 1<<6) {
-    // Small allocation
-    n = (1<<3) + ((alloc >>3) << 3);
-  } else  {
-    // Medium or large allocations
-    n = (alloc < pageSize) ? 1 << 3 : pageSize;
-    while (n < alloc) {
-      // Test for wrap around, do not exceed INT_MAX
-      if (n <= 0)
-        return INT_MAX;
-      n <<= 1;
-    }
+  bool normal = true;
+  if(msec > 999) {
+    unsigned tmp = msec;
+    seconds += tmp / millisPerSecond;
+    msec = tmp % millisPerSecond;
+    normal = false;
   }
-  return n - extra;
+  if(seconds > 59) {
+    unsigned tmp = seconds;
+    minutes += tmp / secondsPerMin;
+    seconds = tmp % secondsPerMin;
+    normal = false;
+  }
+  if(minutes > 59) {
+    unsigned tmp = minutes;
+    hours += tmp / minutesPerHour;
+    minutes = tmp % minutesPerHour;
+    normal = false;
+  }
+  return normal;
 }
 
+void
+Timestamp::setComponents(const Timestamp::Components &c)
+{
+  Components normal = c;
+  normal.normalize();
+  ms = (c.hours * millisPerHour)
+     + (c.minutes * millisPerMinute)
+     + (c.seconds * millisPerSecond)
+     + (c.msec);
+}
+
+Timestamp
+Timestamp::fromComponents(const Timestamp::Components &c)
+{
+  Components normal = c;
+  normal.normalize();
+  return Timestamp((c.hours * millisPerHour)
+                 + (c.minutes * millisPerMinute)
+                 + (c.seconds * millisPerSecond)
+                 + (c.msec));
+}
+
+bool
+Timestamp::toComponents(Timestamp::Components &c) const
+{
+  if(isMalformed())
+    return false;
+
+  c.hours = ms / millisPerHour;
+  c.minutes = (ms % millisPerHour) / millisPerMinute;
+  c.seconds = (ms % millisPerMinute) / millisPerSecond;
+  c.msec = ms % millisPerSecond;
+  return true;
+}
 
 } // TimedText

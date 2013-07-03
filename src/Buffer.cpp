@@ -1,3 +1,30 @@
+//
+// Copyright (c) 2014 Caitlin Potter and Contributors
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//  * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//  * Redistributions in binary form must reproduce the above copyright
+// notice, this list of conditions and the following disclaimer in the
+// documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+
 #include <TimedText/Buffer.h>
 
 namespace TimedText
@@ -239,28 +266,30 @@ Buffer::collectDigits(String &result, int *len)
 {
   if(eof())
     return false;
-  // This is way generous for a series of digits.
-  // StringBuilder might be a little bit expensive to
-  // use for this
-  char tmp[0x40] = "";
-  int n = 0;
+  bool ok;
+  StringBuilder collected(16,ok);
+  if(!ok)
+    return false;
   char c;
+  int n = 0;
   bool finished = false;
 
 retry:
   lock();
-  while(n < sizeof(tmp) && next(c)) {
+  while(!finished && next(c)) {
     if(Char::isAsciiDigit(c))
-      tmp[n++] = c;
+      if(!collected.append(c))
+        finished = true;
+      else
+        ++n;
     else {
       --i;
       finished = true;
-      break;
     }
   }
   unlock();
 
-  if(n >= sizeof(tmp) || eof())
+  if(eof())
     finished = true;
 
   if(!finished && isAsynchronous()) {
@@ -268,9 +297,12 @@ retry:
     goto retry;
   }
 
-  result += String(tmp,n);
   if(len)
     *len = n;
+  String tmp;
+  if(!collected.toString(tmp))
+    return false;
+  result += tmp;
   return finished;
 }
 

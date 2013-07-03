@@ -25,23 +25,24 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef __TimedText_UserAgent__
-#define __TimedText_UserAgent__
+#ifndef __TimedText_Client__
+#define __TimedText_Client__
 
 #include <TimedText/Cue.h>
-#include <TimedText/Error.h>
 
 namespace TimedText
 {
 
-class UserAgent
+// The Client object is an interface which is notified by parsers when new
+// important information is available, for instance Cues being available
+// from the parser.
+class Client
 {
 public:
-  virtual ~UserAgent() {}
-  virtual void parsedCue(Cue *cue);
-  virtual void reportError(Error *error);
+  virtual ~Client() {}
+  virtual void cuesAvailable() {}
 };
 
 }
 
-#endif // __TimedText_UserAgent__
+#endif // __TimedText_Client__

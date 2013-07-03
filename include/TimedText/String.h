@@ -29,6 +29,7 @@
 #ifndef __TimedText_String__
 #define __TimedText_String__
 
+#include <TimedText/Types.h>
 #include <TimedText/Char.h>
 #include <TimedText/Unicode.h>
 #include <cstring>
@@ -42,37 +43,44 @@ class StringBuilder;
 class String
 {
 public:
-  String() : d(&sharedEmpty) { ++d->ref; }
+  struct Data;
+  String();
 	explicit String(const char *utf8, int len=-1);
   ~String();
+  String(Data &d);
 	String(const String &str);
 	String &operator=(const String &str);
   String &operator+=(const String &str);
 
 	// Returns true if the string is empty or NULL.
 	inline bool isEmpty() const {
-    return d->length == 0;
+    return length() == 0;
   }
 
-  inline int length() const {
-    return d->length;
-  }
+  bool isNull() const;
+
+  int length() const;
 
   inline int size() const {
-    return d->length;
+    return length();
   }
 
-	inline const char *text() const {
-		return d->text;
-	}
+	const char *text() const;
+
+  inline operator const char *() const {
+    return text();
+  }
 
   inline char operator[](int i) const {
-    if(i < 0 || i >= d->length)
+    if(i < 0 || i >= length())
       return '\0';
-    return d->text[i];
+    return text()[i];
   }
 
-  void clear();
+  inline void clear() {
+    if(!isNull())
+      *this = String();
+  }
 
   int indexOf(const char *text, int len=-1, int from = 0) const;
   inline int indexOf(const String &str, int from = 0) const {
@@ -118,11 +126,19 @@ public:
   }
   bool endsWith(unsigned long ucs4) const;
 
+  static int parseInt(const char *buffer, int len = -1);
   int parseInt(int &position, int *digits) const;
   int skipWhitespace(int &position) const;
 
   String substring(int position) const;
   String substring(int position, int length) const;
+
+  bool collectWord(int &position, char out[], int max) const;
+  template <size_t N>
+  inline bool collectWord(int &position, char (&out)[N]) const {
+    return collectWord(position, out, N);
+  }
+  int skipUntilWhitespace(int &position) const;
 
 private:
   friend class StringBuilder;
@@ -130,18 +146,15 @@ private:
                         const char *needle, int needle_len);
   static int findStringBoyerMoore(const char *bucket, int bucket_len, int from,
                                   const char *needle, int needle_len);
-	struct Data
-	{
-		int ref;
-		int length;
-		char text[1];
-	};
-	Data *d;
-  static Data sharedEmpty;
+
+  Data *d;
   static Data sharedNull;
+  static Data sharedEmpty;
+  void freeData(Data *x);
+  bool realloc(int size);
 };
 
-bool isAsciiDigit(char c);
+TT_DECLARE_TYPEINFO(String, TT_MOVABLE_TYPE);
 
 } // TimedText
 
