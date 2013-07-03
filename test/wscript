@@ -36,7 +36,15 @@ def options(ctx):
 	ctx.add_option('--with-valgrind',dest='valgrind',
 		           help='Run tests with valgrind checks',
 		           action='store_true', default=False)
-
+	ctx.add_option('--valgrind-options',dest='valgrind_opts',
+		           help='Valgrind options for test-runner',
+		           action='store', default='--tool=memcheck --track-origins=yes --leak-check=full --exit-errorcode=1')
+	ctx.add_option('--with-drmemory',dest='drmemory',
+		           help='Run tests with DrMemory checks (Currently only supports -m32 builds)',
+		           action='store_true', default=False)
+	ctx.add_option('--drmemory-options',dest='drmemory_opts',
+		            help='DrMemory options for test-runner',
+		            action='store', default='-show_reachable -show_threads -batch')
 def configure(ctx):
 	pass
 
@@ -45,9 +53,12 @@ def build(ctx):
 	#ctx.options.all_tests = True
 	features=['cxx','cxxprogram']
 	cxxflags=ctx.env.CXXFLAGS
-	if ctx.options.testcmd is False and ctx.options.valgrind is True:
-		ctx.options.testcmd = "valgrind --tool=memcheck --track-origins=yes --leak-check=full --error-exitcode=1 %s"
-		print "Using valgrind! %s" % ctx.options.testcmd
+	if ctx.options.testcmd is False:
+		if ctx.options.valgrind:
+			ctx.options.testcmd = ("valgrind %s --"%ctx.options.valgrind_opts) + " %s"
+		elif ctx.options.drmemory:
+			ctx.options.testcmd = ("drmemory %s --"%ctx.options.drmemory_opts) + " %s"
+
 	if ctx.cmd in ['check']:
 		features.append('test')
 	if ctx.env.DEST_OS in ['linux']:
@@ -67,6 +78,7 @@ def build(ctx):
 			        defines=['private=public','protected=public'])
 
 	val = re.compile('=+\d+=+ (?P<details>.*)')
+	drm = re.compile('~~Dr\.M~~ (?P<details>.*)')
 	def proc_valgrind_err(err):
 		for l in err.splitlines(False):
 			m = re.match(val, l)
@@ -76,14 +88,24 @@ def build(ctx):
 				s = md['details']
 			Logs.pprint('CYAN', s)
 
+	def proc_drmem_err(err):
+		for l in err.splitlines(False):
+			m = re.match(drm, l)
+			s = l
+			if m:
+				md = m.groupdict()
+				s = md['details']
+			if not s.startswith('Details:'):
+				Logs.pprint('CYAN', s)
+
 	def proc_default_err(err):
 		for l in err.splitlines(False):
 			Logs.pprint('CYAN',l)
 	proc_err = None
-	if isinstance(ctx.options.testcmd,str) or isinstance(ctx.options.testcmd,basestring):
-		if 'valgrind' in ctx.options.testcmd:
-			proc_err = proc_valgrind_err
-    	
+	if ctx.options.valgrind:
+		proc_err = proc_valgrind_err
+	elif ctx.options.drmemory:
+		proc_err = proc_drmem_err
 	if not proc_err:
 		proc_err = proc_default_err
 
