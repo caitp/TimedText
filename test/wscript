@@ -38,7 +38,7 @@ def options(ctx):
 		           action='store_true', default=False)
 	ctx.add_option('--valgrind-options',dest='valgrind_opts',
 		           help='Valgrind options for test-runner',
-		           action='store', default='--tool=memcheck --track-origins=yes --leak-check=full --exit-errorcode=1')
+		           action='store', default='--tool=memcheck --track-origins=yes --leak-check=full --error-exitcode=1')
 	ctx.add_option('--with-drmemory',dest='drmemory',
 		           help='Run tests with DrMemory checks (Currently only supports -m32 builds)',
 		           action='store_true', default=False)
