@@ -29,6 +29,8 @@
 #define __TimedText_Cue__
 
 #include <TimedText/String.h>
+#include <TimedText/Timestamp.h>
+#include <climits>
 
 namespace TimedText
 {
@@ -36,29 +38,85 @@ namespace TimedText
 class Cue
 {
 public:
+  enum Type
+  {
+    EmptyCue = 0,
+    WebVTTCue,
+    TTMLCue,
+  };
+
+  // WebVTT constants
+  enum Vertical
+  {
+    Horizontal = 0,
+    VerticalLeftToRight,
+    VerticalRightToLeft
+  };
+  enum Align
+  {
+    Start = 0,
+    Middle,
+    End,
+    Left,
+    Right
+  };
+
+  static const int Auto = INT_MAX;
+  static const Vertical defaultVertical = Horizontal;
+  static const int defaultLine = Auto;
+  static const bool defaultSnapToLines = true;
+  static const int defaultPosition = 50;
+  static const int defaultSize = 100;
+  static const Align defaultAlign = Middle;
+
+  Cue();
+  Cue(Type type, Timestamp startTime, Timestamp endTime,
+      const String &id = String(), const String &text = String());
+  Cue(const Cue &other);
   ~Cue();
 
-  String id() const {
-  	return _id;
-  }
+  Cue &operator=(const Cue &other);
 
-  // TTML: begin
-  Timestamp startTime() const {
-  	return _startTime;
-  }
-  Timestamp endTime() const {
-  	return _endTime;
-  }
-  bool pauseOnExit() const {
-  	return _pauseOnExit;
-  }
+  Type type() const;
+  String id() const;
+  String text() const;
+  Timestamp startTime() const;
+  Timestamp endTime() const;
 
+  void setId(const String &id);
+  void setText(const String &text);
+  void setStartTime(const Timestamp &ts);
+  void setEndTime(const Timestamp &ts);
+  void applySettings(const String &settings);
+
+  // WebVTT-specific API
+  bool snapToLines() const;
+  int line() const;
+  int size() const;
+  int position() const;
+  Vertical vertical() const;
+  Align align() const;
+
+  bool setLine(int line, bool snapToLines);
+  bool setSize(int size);
+  bool setPosition(int position);
+  bool setVertical(Vertical vertical);
+  bool setAlign(Align align);
+
+  bool setLine(const char *value, int len = -1);
+  bool setSize(const char *value, int len = -1);
+  bool setPosition(const char *value, int len = -1);
+  bool setVertical(const char *value, int len = -1);
+  bool setAlign(const char *value, int len = -1);
+
+  void resetCueSettings();
+
+  struct Data;
 protected:
-  String _id;
-  Timestamp _startTime;
-  Timestamp _endTime;
-  bool _pauseOnExit;
+  Data *d;
 };
+
+TT_DECLARE_TYPEINFO(Cue, TT_MOVABLE_TYPE);
 
 }
 

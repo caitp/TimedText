@@ -111,6 +111,7 @@ TEST(SynchronousBuffer,CollectWord)
 
 TEST(SynchronousBuffer,CollectDigits)
 {
+
   SynchronousBuffer buffer;
   String digits;
   int n;
@@ -124,6 +125,7 @@ TEST(SynchronousBuffer,CollectDigits)
   EXPECT_STREQ("123456789", digits.text());
   EXPECT_EQ(5, n);
   EXPECT_TRUE(buffer.next(unused)); // skip 'x'
+
   EXPECT_TRUE(buffer.collectDigits(digits, &n));
   EXPECT_STREQ("1234567890", digits.text());
   EXPECT_EQ(1, n);

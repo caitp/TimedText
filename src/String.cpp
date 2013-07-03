@@ -25,7 +25,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#include <TimedText/String.h>
+#include "StringData.h"
 #include <cstring>
 #include <climits>
 #include <cstdlib>
@@ -33,75 +33,122 @@
 namespace TimedText
 {
 
-String::Data String::sharedEmpty = { 1, 0, { '\0' } };
-String::Data String::sharedNull = { 1, 0, { '\0' } };
+String::Data String::sharedEmpty = { AtomicInt(1), 0, { '\0' } };
+String::Data String::sharedNull = { AtomicInt(1), 0, { '\0' } };
+
+String::String() : d(&sharedNull) { d->ref.ref(); }
+
+String::String(Data &dd) : d(&dd) { d->ref.ref(); }
 
 String::String(const char *utf8, int len)
 {
-  if(!utf8) {
+  if(!utf8)
     d = &sharedNull; 
-    ++d->ref;
-  } else {
+  else {
     if(len < 0)
       len = ::strlen(utf8);
-    if(len == 0) {
+    if(len == 0)
       d = &sharedEmpty;
-    } else {
+    else {
       int alloc = Unicode::utf8Length(utf8,len);
       d = static_cast<Data *>(::malloc(sizeof(Data) + alloc));
-      if(!d) {
+      if(!d)
         d = &sharedNull;
-      } else {
+      else {
         d->ref = 0;
-        Unicode::toValidUtf8(d->text, alloc+1, d->length, utf8, len);
+        d->length = 0;
+        Unicode::toValidUtf8(d->text, alloc + 1, d->length, utf8, len);
+        d->text[d->length] = '\0';
       }
-      ++d->ref;
     }
   }
+  d->ref.ref();
+}
+
+String::String(const String &str)
+  : d(str.d)
+{
+  d->ref.ref();
+}
+
+void
+String::freeData(Data *x)
+{
+  if(x->ref == 0)
+    ::free(x);
+}
+
+bool
+String::realloc(int size)
+{
+  if(d->ref != 1) {
+    Data *x = static_cast<Data *>(::malloc(sizeof(Data) + size));
+    if(!x)
+      return false;
+    x->length = size < d->length ? size : d->length;
+    ::memcpy(x->text, d->text, x->length);
+    x->text[x->length] = '\0';
+    x->ref = 1;
+    if(!d->ref.deref())
+      freeData(d);
+    d = x;
+  } else {
+    Data *x = static_cast<Data *>(::realloc(d, sizeof(Data) + size));
+    if(!x)
+      return false;
+    d = x;
+  }
+  return true;
 }
 
 String::~String()
 {
-  if(!--d->ref)
-    ::free(d);
+  if(!d->ref.deref())
+    freeData(d);
 }
 
 String &
-String::operator=(const String &str)
+String::operator=(const String &other)
 {
-  Data *x = d;
-  d = str.d;
-  ++d->ref;
-  if(!--x->ref)
-    ::free(x);
+  other.d->ref.ref();
+  if(!d->ref.deref())
+    freeData(d);
+  d = other.d;
   return *this;
 }
 
 String &
-String::operator+=(const String &str)
+String::operator+=(const String &other)
 {
-  int n = size() + str.size();
-  Data *x = static_cast<Data *>(::malloc(sizeof(Data) + n));
-  x->ref = 1;
-  x->length = n;
-  ::memcpy(x->text, d->text, d->length);
-  ::memcpy(x->text + d->length, str.text(), str.length());;
-  x->text[n] = '\0';
-  Data *y = d;
-  d = x;
-  if(!--y->ref)
-    ::free(y);
+  if(other.d != &sharedNull) {
+    if(d == &sharedNull)
+      operator=(other);
+    else {
+      if(!realloc(d->length + other.d->length))
+        return *this;
+      ::memcpy(d->text + d->length, other.d->text, other.d->length);
+      d->length += other.d->length;
+      d->text[d->length] = '\0';
+    }
+  }
   return *this;
 }
 
-void
-String::clear()
+int
+String::length() const
 {
-  Data *old = d;
-  d = &sharedEmpty;
-  ++d->ref;
-  if(!--old->ref)
-    ::free(old);
+  return d->length;
+}
+
+bool
+String::isNull() const {
+  return d == &sharedEmpty;
+}
+
+const char *
+String::text() const
+{
+  return d->text;
 }
 
 int
@@ -193,6 +240,39 @@ String::parseInt(int &position, int *digits) const
 }
 
 int
+String::parseInt(const char *buffer, int len)
+{
+  if(!buffer)
+    return 0;
+  if(len < 0)
+    len = ::strlen(buffer);
+  if(len == 0)
+    return 0;
+  // Radix is always 10 here
+  const int radix = 10;
+  bool neg = false;
+  int value = 0;
+  int i = 0;
+  int d = 0;
+  for( int i=0; i<len; ++i) {
+    char c = buffer[i];
+    if(c == '-' && i == 0) {
+      neg = true;
+    } else if(Char::isAsciiDigit(c)) {
+      ++d;
+      value = (value * radix) + c - '0';
+    } else {
+      break;
+    }
+  }
+  if(!d)
+    return 0;
+  if(neg)
+    value = -value;
+  return value;
+}
+
+int
 String::skipWhitespace(int &position) const
 {
   int i = 0;
@@ -221,6 +301,32 @@ String::substring(int position, int len) const
   if(position + len >= length())
     len = length() - position;
   return String(d->text + position, len);
+}
+
+bool
+String::collectWord(int &position, char out[], int max) const
+{
+  int n = 0;
+  if(isEmpty() || position < 0 || position >= d->length || max <= 0)
+    return false;
+  for( ; position < d->length && !Char::isHtml5Space(d->text[position]);
+         out[n++] = d->text[position++]);
+  if(n < max) {
+    out[n] = '\0';
+    return true;
+  }
+  return false;
+}
+
+int
+String::skipUntilWhitespace(int &position) const
+{
+  int n = 0;
+  if(position < 0 || position >= length())
+    return 0;
+  for( ; position < length() && !Char::isHtml5Space(d->text[position]);
+       ++n, ++position);
+  return n;
 }
 
 static inline int

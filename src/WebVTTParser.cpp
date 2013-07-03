@@ -1,20 +1,48 @@
+//
+// Copyright (c) 2014 Caitlin Potter and Contributors
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//  * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//  * Redistributions in binary form must reproduce the above copyright
+// notice, this list of conditions and the following disclaimer in the
+// documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+
 #include <TimedText/WebVTTParser.h>
 
 namespace TimedText
 {
 
-WebVTTParser::WebVTTParser(Buffer &buf)
-  : buffer(buf)
+WebVTTParser::WebVTTParser(Buffer &buf, Client *_client)
+  : buffer(buf), client(_client)
 {
   state = Initial;
   status = Unfinished;
   headerStatus = InitialHeader;
   withBOM = BOMUnknown;
-  currentStartTime = currentEndTime = MalformedTime;
+  currentStartTime = currentEndTime = MalformedTimestamp;
 }
 
 WebVTTParser::~WebVTTParser()
 {
+  currentCues.clear();
 }
 
 bool
@@ -161,11 +189,11 @@ WebVTTParser::ParseState
 WebVTTParser::collectTimingsAndSettings(const String &line)
 {
   int position = 0;
-  currentStartTime = currentEndTime = MalformedTime;
+  currentStartTime = currentEndTime = MalformedTimestamp;
   line.skipWhitespace(position);
   currentStartTime = collectTimeStamp(line, position);
 
-  if(currentStartTime == MalformedTime)
+  if(currentStartTime.isMalformed())
     return BadCue;
 
   line.skipWhitespace(position);
@@ -180,7 +208,7 @@ WebVTTParser::collectTimingsAndSettings(const String &line)
 
   currentEndTime = collectTimeStamp(line, position);
 
-  if(currentEndTime == MalformedTime)
+  if(currentEndTime.isMalformed())
     return BadCue;
 
   line.skipWhitespace(position);
@@ -190,7 +218,7 @@ WebVTTParser::collectTimingsAndSettings(const String &line)
   return CueText;
 }
 
-double
+Timestamp
 WebVTTParser::collectTimeStamp(const String &line, int &position)
 {
   enum Mode {
@@ -199,7 +227,7 @@ WebVTTParser::collectTimeStamp(const String &line, int &position)
   } mode = Minutes;
   int digits;
   if(position < 0 || position >= line.length() || !Char::isAsciiDigit(line[0]))
-    return MalformedTime;
+    return MalformedTimestamp;
 
   int value1 = line.parseInt(position, &digits);
   // Only the hours field is flexible in terms of how many digits
@@ -208,30 +236,30 @@ WebVTTParser::collectTimeStamp(const String &line, int &position)
     mode = Hours;
 
   if(position >= line.length() || line[position++] != ':')
-    return MalformedTime;
+    return MalformedTimestamp;
 
   if(position >= line.length() || !Char::isAsciiDigit(line[position]))
-    return MalformedTime;
+    return MalformedTimestamp;
 
   int value2 = line.parseInt(position, &digits);
   // TODO: Be more flexible here, we don't necessarily want to die
   // just because of a marginally invalid time component
   if(digits != 2)
-    return MalformedTime;
+    return MalformedTimestamp;
 
   int value3;
   if(mode == Hours || (position < line.length() && line[position] == ':')) {
     // If we don't have at least 3 components, or we have 3 but are expecting
     // 4, then die. TODO: As above, we can be more flexible here...
     if(position >= line.length() || line[position++] != ':')
-      return MalformedTime;
+      return MalformedTimestamp;
     // If it's not a number, there isn't much we can do with it...
     if(position >= line.length() || !Char::isAsciiDigit(line[position]))
-      return MalformedTime;
+      return MalformedTimestamp;
     value3 = line.parseInt(position, &digits);
     // TODO: Again, we should be more flexible here...
     if(digits != 2)
-      return MalformedTime;
+      return MalformedTimestamp;
   } else {
     // If we are actually minutes, then shift everything over a bit.
     value3 = value2;
@@ -240,32 +268,42 @@ WebVTTParser::collectTimeStamp(const String &line, int &position)
   }
 
   if(position >= line.length() || line[position++] != '.')
-    return MalformedTime;
+    return MalformedTimestamp;
   // If it's not a number, there isn't much we can do with it...
   if(position >= line.length() || !Char::isAsciiDigit(line[position]))
-    return MalformedTime;
+    return MalformedTimestamp;
 
   int value4 = line.parseInt(position, &digits);
   // TODO: same as above...
   if(digits != 3)
-    return MalformedTime;
+    return MalformedTimestamp;
 
-  return (value1 * SecondsPerHour)
-       + (value2 * SecondsPerMinute)
-       + value3
-       + (value4 * SecondsPerMillisecond);
+  Timestamp::Components components = { value1, value2, value3, value4 };
+  return Timestamp::fromComponents(components);
 }
 
 void
 WebVTTParser::dispatchCue()
 {
+  String text;
+  // If this allocation fails, we have no way of notifying the user,
+  // currently!
+  currentCueText.toString(text);
+  Cue cue(Cue::WebVTTCue, currentStartTime, currentEndTime,
+          currentId, text);
+  cue.applySettings(currentSettings);
+  currentCues.push(cue);
+
   // TODO:
   // Create Cue object and send it off to the client
   currentSettings.clear();
   currentId.clear();
-  currentEndTime = currentStartTime = MalformedTime;
+  currentEndTime = currentStartTime = MalformedTimestamp;
   currentCueText.clear();
   state = Id;
+
+  if(client)
+    client->cuesAvailable();
 }
 
 void
@@ -273,7 +311,7 @@ WebVTTParser::dropCue()
 {
   currentSettings.clear();
   currentId.clear();
-  currentEndTime = currentStartTime = MalformedTime;
+  currentEndTime = currentStartTime = MalformedTimestamp;
   currentCueText.clear();
   state = Id;
 }
@@ -293,7 +331,7 @@ WebVTTParser::parse(Status *pstatus)
 retry:
   if(!buffer.getline(line)) {
     status = Unfinished;
-    if(*pstatus)
+    if(pstatus)
       *pstatus = status;
     return false;
   }
@@ -343,19 +381,31 @@ retry:
         if(!currentCueText.isEmpty())
           currentCueText.append('\n');
         currentCueText.append(line);
+
+        // If this was the last line in the buffer, we need to dispatch.
+        if(buffer.eof())
+          state == BadCue ? dropCue() : dispatchCue();
       }
       break;
   }
   line.clear();
-  if(status != Aborted)
-    if(buffer.eof())
+  if(status != Aborted) {
+    if(buffer.eof()) {
       status = Finished;
-    else
+    } else {
       goto retry;
-
+    }
+  }
   if(pstatus)
     *pstatus = status;
   return status == Finished;
+}
+
+void
+WebVTTParser::parsedCues(List<Cue> &result)
+{
+  result = currentCues;
+  currentCues.clear();
 }
 
 } // TimedText

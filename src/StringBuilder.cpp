@@ -26,6 +26,7 @@
 //
 
 #include <TimedText/StringBuilder.h>
+#include "StringData.h"
 #include "Utility.h"
 #include <cstdlib>
 
@@ -110,7 +111,7 @@ StringBuilder::indexOf(const char *utf8, int len, int from) const
 bool StringBuilder::toString(String &result) const
 {
   result = String(d->text,d->length);
-  return result.size()==size();
+  return result.d->length==d->length;
 }
 
 void
