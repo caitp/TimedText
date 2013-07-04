@@ -61,7 +61,11 @@ public:
     Right
   };
 
-  static const int Auto = INT_MAX;
+  enum
+  {
+    Auto = INT_MAX
+  };
+
   static const Vertical defaultVertical = Horizontal;
   static const int defaultLine = Auto;
   static const bool defaultSnapToLines = true;

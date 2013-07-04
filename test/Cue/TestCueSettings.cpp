@@ -166,3 +166,64 @@ TEST(CueSettings,SetVertical)
   testSetVertical("1",false);
   testSetVertical("2",false);
 }
+
+TEST(CueSettings,EmptyCue)
+{
+  // Avoid using references to const values in EXPECT_EQ statements
+  const Cue::Align defaultAlign = Cue::defaultAlign;
+  const int defaultLine = Cue::defaultLine;
+  const int defaultPosition = Cue::defaultPosition;
+  const int defaultSize = Cue::defaultSize;
+  const bool defaultSnapToLines = Cue::defaultSnapToLines;
+  const Cue::Vertical defaultVertical = Cue::defaultVertical;
+
+  // Trying to set empty cue settings should always fail
+  Cue cue;
+  // Align
+  EXPECT_FALSE(cue.setAlign(Cue::Start));
+  EXPECT_FALSE(cue.setAlign(Cue::Middle));
+  EXPECT_FALSE(cue.setAlign(Cue::End));
+  EXPECT_FALSE(cue.setAlign(Cue::Left));
+  EXPECT_FALSE(cue.setAlign(Cue::Right));
+  EXPECT_FALSE(cue.setAlign("start"));
+  EXPECT_FALSE(cue.setAlign("middle"));
+  EXPECT_FALSE(cue.setAlign("end"));
+  EXPECT_FALSE(cue.setAlign("left"));
+  EXPECT_FALSE(cue.setAlign("right"));
+  EXPECT_EQ(defaultAlign,cue.align());
+
+  // Line
+  EXPECT_FALSE(cue.setLine(0, false));
+  EXPECT_FALSE(cue.setLine(0, false));
+  EXPECT_FALSE(cue.setLine(-101, true));
+  EXPECT_FALSE(cue.setLine(101, true));
+  EXPECT_FALSE(cue.setLine("0%"));
+  EXPECT_FALSE(cue.setLine("100%"));
+  EXPECT_FALSE(cue.setLine("-101"));
+  EXPECT_FALSE(cue.setLine("1001"));
+  EXPECT_EQ(defaultLine, cue.line());
+  EXPECT_EQ(defaultSnapToLines, cue.snapToLines());
+
+  // Position
+  EXPECT_FALSE(cue.setPosition(0));
+  EXPECT_FALSE(cue.setPosition(100));
+  EXPECT_FALSE(cue.setPosition("0%"));
+  EXPECT_FALSE(cue.setPosition("100%"));
+  EXPECT_EQ(defaultPosition, cue.position());
+
+  // Size
+  EXPECT_FALSE(cue.setSize(0));
+  EXPECT_FALSE(cue.setSize(100));
+  EXPECT_FALSE(cue.setSize("0%"));
+  EXPECT_FALSE(cue.setSize("100%"));
+  EXPECT_EQ(defaultSize, cue.size());
+
+  // Vertical
+  EXPECT_FALSE(cue.setVertical(Cue::Horizontal));
+  EXPECT_FALSE(cue.setVertical(Cue::VerticalLeftToRight));
+  EXPECT_FALSE(cue.setVertical(Cue::VerticalRightToLeft));
+  EXPECT_FALSE(cue.setVertical(""));
+  EXPECT_FALSE(cue.setVertical("lr"));
+  EXPECT_FALSE(cue.setVertical("rl"));
+  EXPECT_EQ(defaultVertical, cue.vertical());
+}
