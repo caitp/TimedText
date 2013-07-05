@@ -189,8 +189,8 @@ TEST(CueSettings,SetLine)
   testSetLine("%",false);
   testSetLine("-",false);
   testSetLine("alpha",false);
-  testSetPosition("",false);
-  testSetPosition(NULL,false);
+  testSetLine("",false);
+  testSetLine(NULL,false);
 }
 
 TEST(CueSettings,SetPosition)
