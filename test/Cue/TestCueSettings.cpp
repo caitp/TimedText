@@ -29,15 +29,32 @@
 #include <gtest/gtest.h>
 using namespace TimedText;
 
-void testSetAlign(const char *text, bool expectedSet, Cue::Align expectedAlign = Cue::Middle)
+void testSetAlign(const char *text, bool expectedSet,
+                  Cue::Align expectedAlign = Cue::Middle)
 {
   static int run = 0;
   Cue cue(Cue::WebVTTCue, 0.000, 1.000);
   if(!expectedSet)
     expectedAlign = Cue::defaultAlign;
   ++run;
-  EXPECT_EQ(expectedSet, cue.setAlign(text)) << "in testSetAlign #" << run;
-  EXPECT_EQ(expectedAlign, cue.align()) << "in testSetAlign #" << run;
+  EXPECT_EQ(expectedSet, cue.setAlign(text))
+    << "in testSetAlign(string) #" << run;
+  EXPECT_EQ(expectedAlign, cue.align())
+    << "in testSetAlign(string) #" << run;
+}
+
+void testSetAlign(Cue::Align align, bool expectedSet,
+                  Cue::Align expectedAlign = Cue::Middle)
+{
+  static int run = 0;
+  Cue cue(Cue::WebVTTCue, 0.000, 1.000);
+  if(!expectedSet)
+    expectedAlign = Cue::defaultAlign;
+  ++run;
+  EXPECT_EQ(expectedSet, cue.setAlign(align))
+    << "in testSetAlign(enum) #" << run;
+  EXPECT_EQ(expectedAlign, cue.align())
+    << "in testSetAlign(enum) #" << run;
 }
 
 void testSetLine(const char *text, bool expectedSet,
@@ -143,6 +160,7 @@ TEST(CueSettings,SetEndTime)
 
 TEST(CueSettings,SetAlign)
 {
+  const Cue::Align defaultAlign = Cue::defaultAlign;
   testSetAlign("start",true,Cue::Start);
   testSetAlign("middle",true,Cue::Middle);
   testSetAlign("end",true,Cue::End);
@@ -153,6 +171,8 @@ TEST(CueSettings,SetAlign)
   testSetAlign("bottom",false);
   testSetAlign("",false);
   testSetAlign(NULL,false);
+  testSetAlign(static_cast<Cue::Align>(-1),false,defaultAlign);
+  testSetAlign(static_cast<Cue::Align>(68),false,defaultAlign);
 }
 
 TEST(CueSettings,SetLine)
