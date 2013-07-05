@@ -61,7 +61,11 @@ public:
     Right
   };
 
-  static const int Auto = INT_MAX;
+  enum
+  {
+    Auto = INT_MAX
+  };
+
   static const Vertical defaultVertical = Horizontal;
   static const int defaultLine = Auto;
   static const bool defaultSnapToLines = true;
@@ -84,7 +88,13 @@ public:
   Timestamp endTime() const;
 
   void setId(const String &id);
+  void setId(const char *id, int len=-1) {
+    setId(String(id,len));
+  }
   void setText(const String &text);
+  void setText(const char *id, int len=-1) {
+    setText(String(id,len));
+  }
   void setStartTime(const Timestamp &ts);
   void setEndTime(const Timestamp &ts);
   void applySettings(const String &settings);
