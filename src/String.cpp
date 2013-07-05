@@ -309,8 +309,9 @@ String::collectWord(int &position, char out[], int max) const
   int n = 0;
   if(isEmpty() || position < 0 || position >= d->length || max <= 0)
     return false;
-  for( ; position < d->length && !Char::isHtml5Space(d->text[position]);
-         out[n++] = d->text[position++]);
+  for( ; n < max && position < d->length
+         && !Char::isHtml5Space(d->text[position])
+       ; out[n++] = d->text[position++]);
   if(n < max) {
     out[n] = '\0';
     return true;

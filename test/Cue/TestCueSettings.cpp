@@ -318,3 +318,139 @@ TEST(CueSettings,EmptyCue)
   EXPECT_FALSE(cue.setVertical("rl"));
   EXPECT_EQ(defaultVertical, cue.vertical());
 }
+
+void testApplySettings(const char *text, Cue::Align expectedAlign,
+                       int expectedLine, bool expectedSnapToLines,
+                       int expectedPosition, int expectedSize,
+                       Cue::Vertical expectedVertical)
+{
+  static int run = 1;
+  // This is a fairly long-winded function...
+  String line = String(text);
+  Cue cue(Cue::WebVTTCue,0.000, 1.000);
+  cue.applySettings(line);
+  EXPECT_EQ(expectedAlign, cue.align())
+    << "testApplySettings #" << run;
+  EXPECT_EQ(expectedLine, cue.line())
+    << "testApplySettings #" << run;
+  EXPECT_EQ(expectedSnapToLines, cue.snapToLines())
+    << "testApplySettings #" << run;
+  EXPECT_EQ(expectedPosition, cue.position())
+    << "testApplySettings #" << run;
+  EXPECT_EQ(expectedSize, cue.size())
+    << "testApplySettings #" << run;
+  EXPECT_EQ(expectedVertical, cue.vertical())
+    << "testApplySettings #" << run;
+  ++run;
+}
+
+TEST(CueSettings,ApplySettings)
+{
+  // Avoid using references to const values in EXPECT_EQ statements
+  const Cue::Align align = Cue::defaultAlign;
+  const int line = Cue::defaultLine;
+  const bool snapToLines = Cue::defaultSnapToLines;
+  const int position = Cue::defaultPosition;
+  const int size = Cue::defaultSize;
+  const Cue::Vertical vertical = Cue::defaultVertical;
+
+  // The CueSettings application function Cue::applySettings()
+  // This only applies to WebVTT attributes, and specifies an entire
+  // line of settings.
+  //
+  // First, test individual, correct settings
+  testApplySettings("align:start", Cue::Start, line, snapToLines, position,
+                    size, vertical);
+  testApplySettings("align:middle", Cue::Middle, line, snapToLines, position,
+                    size, vertical);
+  testApplySettings("align:end", Cue::End, line, snapToLines, position, size,
+                    vertical);
+  testApplySettings("align:left", Cue::Left, line, snapToLines, position, size,
+                    vertical);
+  testApplySettings("align:right", Cue::Right, line, snapToLines, position,
+                    size, vertical);
+  testApplySettings("line:-1", align, -1, true, position, size, vertical);
+  testApplySettings("line:101", align, 101, true, position, size, vertical);
+  testApplySettings("line:0%", align, 0, false, position, size, vertical);
+  testApplySettings("line:100%", align, 100, false, position, size, vertical);
+  testApplySettings("position:0%", align, line, snapToLines, 0, size,
+                    vertical);
+  testApplySettings("position:100%", align, line, snapToLines, 100, size,
+                    vertical);
+  testApplySettings("size:0%", align, line, snapToLines, position, 0,
+                    vertical);
+  testApplySettings("size:100%", align, line, snapToLines, position, 100,
+                    vertical);
+  testApplySettings("vertical:lr", align, line, snapToLines, position, size,
+                    Cue::VerticalLeftToRight);
+  testApplySettings("vertical:rl", align, line, snapToLines, position, size,
+                    Cue::VerticalRightToLeft);
+
+  // Test that we handle long words correctly, and are able to recover and
+  // parse the rest of the line after
+  const char longWord[] = 
+                 "Very,very,very,very,very,very,very,very,very,very,very,very,"
+                 "very,very,very,very,very,very,very,very,very,very,very,very,"
+                 "very,very,very,very,very,very,very,very,very,very,very,very,"
+                 "very,very,very,very,very,very,very,very,very,very,very,very,"
+                 "very,very,very,very,very,very,very,very,very,very,very,very,"
+                 "very,very,very,very,very,very,very,very,very,very,very,very,"
+                 "very,very,very,very,very,very,very,very,very,very,very,very,"
+                 "very,very,very,very,very,very,very,very,very,very,very,very,"
+                 "very,very,very,very,very,very,very,very,very,very,very,very,"
+                 "very,very,very,very,very,very,very,very,very,very,very,very,"
+                 "very,very,very,very,very,very,very,very,very,very,very,very,"
+                 "very,very,very,very,very,very,very,very,very,very,very,very,"
+                 "very,very,very,very,very,very,very,very,very,very,very,very,"
+                 "very,very,very,very,very,very,very,very,very,very,very,very,"
+                 "very,very,very,very,very,very,very,very,very,veryLONGWORD "
+                 "vertical:lr";
+  testApplySettings(longWord, align, line, snapToLines, position, size,
+                    Cue::VerticalLeftToRight);
+
+  // Test that settings without a separator are ignored
+  testApplySettings("alignleft",align,line,snapToLines,position,size,vertical);
+  testApplySettings("alignright",align,line,snapToLines,position,size,vertical);
+  testApplySettings("alignstart",align,line,snapToLines,position,size,vertical);
+  testApplySettings("alignmiddle",align,line,snapToLines,position,size,vertical);
+  testApplySettings("alignend",align,line,snapToLines,position,size,vertical);
+  testApplySettings("line-1",align,line,snapToLines,position,size,vertical);
+  testApplySettings("line101",align,line,snapToLines,position,size,vertical);
+  testApplySettings("line0%",align,line,snapToLines,position,size,vertical);
+  testApplySettings("line100%",align,line,snapToLines,position,size,vertical);
+  testApplySettings("position0%",align,line,snapToLines,position,size,vertical);
+  testApplySettings("position100%",align,line,snapToLines,position,size,vertical);
+  testApplySettings("size0%",align,line,snapToLines,position,size,vertical);
+  testApplySettings("size100%",align,line,snapToLines,position,size,vertical);
+  testApplySettings("verticalrl",align,line,snapToLines,position,size,vertical);
+  testApplySettings("verticallr",align,line,snapToLines,position,size,vertical);
+
+  // Test that settings that start with a separator are ignored
+  testApplySettings(":left",align,line,snapToLines,position,size,vertical);
+  testApplySettings(":right",align,line,snapToLines,position,size,vertical);
+  testApplySettings(":start",align,line,snapToLines,position,size,vertical);
+  testApplySettings(":middle",align,line,snapToLines,position,size,vertical);
+  testApplySettings(":end",align,line,snapToLines,position,size,vertical);
+  testApplySettings(":-1",align,line,snapToLines,position,size,vertical);
+  testApplySettings(":101",align,line,snapToLines,position,size,vertical);
+  testApplySettings(":0%",align,line,snapToLines,position,size,vertical);
+  testApplySettings(":100%",align,line,snapToLines,position,size,vertical);
+  testApplySettings(":0%",align,line,snapToLines,position,size,vertical);
+  testApplySettings(":100%",align,line,snapToLines,position,size,vertical);
+  testApplySettings(":0%",align,line,snapToLines,position,size,vertical);
+  testApplySettings(":100%",align,line,snapToLines,position,size,vertical);
+  testApplySettings(":rl",align,line,snapToLines,position,size,vertical);
+  testApplySettings(":lr",align,line,snapToLines,position,size,vertical);
+
+  // Test that settings that end with a separator are ignored
+  testApplySettings("align:",align,line,snapToLines,position,size,vertical);
+  testApplySettings("line:",align,line,snapToLines,position,size,vertical);
+  testApplySettings("position:",align,line,snapToLines,position,size,vertical);
+  testApplySettings("size:",align,line,snapToLines,position,size,vertical);
+  testApplySettings("vertical:",align,line,snapToLines,position,size,vertical);
+
+  // Test that two settings which are not separated by whitespace, are
+  // ignored (bad value)
+  testApplySettings("align:leftvertical:rl",align,line,snapToLines,position,
+                    size,vertical);
+}
