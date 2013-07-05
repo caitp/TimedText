@@ -122,42 +122,6 @@ void testSetVertical(Cue::Vertical vertical, bool expectedSet,
     << "in testSetVertical(enum) #" << run;
 }
 
-TEST(CueSettings,SetId)
-{
-  Cue cue(Cue::WebVTTCue, 0.000, 1.000);
-  EXPECT_STREQ("",cue.id());
-  cue.setId("Phnglui mglw nafh Cthulhu R'lyeh wgah nagl fhtagn");
-  EXPECT_STREQ("Phnglui mglw nafh Cthulhu R'lyeh wgah nagl fhtagn", cue.id());
-  // TODO: Test with TTML Cues too!
-}
-
-TEST(CueSettings,SetText)
-{
-  Cue cue(Cue::WebVTTCue, 0.000, 1.000);
-  EXPECT_STREQ("",cue.text());
-  cue.setText("Phnglui mglw nafh Cthulhu R'lyeh wgah nagl fhtagn");
-  EXPECT_STREQ("Phnglui mglw nafh Cthulhu R'lyeh wgah nagl fhtagn", cue.text());
-  // TODO: Test with TTML Cues too!
-}
-
-TEST(CueSettings,SetStartTime)
-{
-  Cue cue(Cue::WebVTTCue, 0.000, 1.000);
-  EXPECT_EQ(0.000,cue.startTime().toSeconds());
-  cue.setStartTime(6667.334);
-  EXPECT_EQ(6667.334,cue.startTime().toSeconds());
-  // TODO: Test with TTML Cues too!
-}
-
-TEST(CueSettings,SetEndTime)
-{
-  Cue cue(Cue::WebVTTCue, 0.000, 1.000);
-  EXPECT_EQ(1.000,cue.endTime().toSeconds());
-  cue.setEndTime(8362.316);
-  EXPECT_EQ(8362.316,cue.endTime().toSeconds());
-  // TODO: Test with TTML Cues too!
-}
-
 TEST(CueSettings,SetAlign)
 {
   const Cue::Align defaultAlign = Cue::defaultAlign;
