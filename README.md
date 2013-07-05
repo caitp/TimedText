@@ -22,7 +22,7 @@ I'm sorry, there will be more of this later on :( Just let me hack on
 this for a while okay? Okay, cool.
 
 ### License
-Copyright (c) 2014 Caitlin Potter and Contributors
+Copyright (c) 2013 Caitlin Potter and Contributors
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
