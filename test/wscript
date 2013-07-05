@@ -70,19 +70,18 @@ def build(ctx):
 		features.append('test')
 		if ctx.options.lcov:
 			from subprocess import call
-			root=ctx.top_dir
 			bld=ctx.bldnode.abspath()
 			baseinfo=os.path.join(bld,'base.info')
 			testinfo=os.path.join(bld,'test.info')
 			totalinfo=os.path.join(bld,'total.info')
-			call(['lcov','-b',root,'-d',bld,'-c', '-i', '-o', baseinfo])
+			call(['lcov','-b',bld,'-d',bld,'-c', '-i', '-o', baseinfo])
 			def lcov_genhtml(ctx):
 				# Create test coverage data file
-				call(['lcov','-b',root,'-d',bld,'-c', '-o', testinfo])
-				if not ctx.options.lcov_html:
-					ctx.options.lcov_html=os.path.join(ctx.bldnode.abspath(),'testcoverage')
+				call(['lcov','-b',bld,'-d',bld,'-c', '-o', testinfo])
 				# Combine base and test coverage
 				call(['lcov','-a',baseinfo,'-a',testinfo,'-o',totalinfo])
+				if not ctx.options.lcov_html:
+					ctx.options.lcov_html=os.path.join(bld,'testcoverage')
 				call(['genhtml','-o',ctx.options.lcov_html,'-t',
 				      'TimedText Test Coverage', '-k', '-s', '--highlight', 
 				      '--legend', '--demangle-cpp',totalinfo])
