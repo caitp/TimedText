@@ -1,6 +1,6 @@
 #!/bin/env python
 
-# Copyright (c) 2014 Caitlin Potter and Contributors
+# Copyright (c) 2013 Caitlin Potter and Contributors
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
