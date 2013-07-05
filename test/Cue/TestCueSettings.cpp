@@ -85,8 +85,24 @@ void testSetVertical(const char *text, bool expectedSet,
   if(!expectedSet)
     expectedVertical = Cue::defaultVertical;
   ++run;
-  EXPECT_EQ(expectedSet, cue.setVertical(text)) << "in testSetVertical #" << run;
-  EXPECT_EQ(expectedVertical, cue.vertical()) << "in testSetVertical #" << run;
+  EXPECT_EQ(expectedSet, cue.setVertical(text))
+    << "in testSetVertical(string) #" << run;
+  EXPECT_EQ(expectedVertical, cue.vertical())
+    << "in testSetVertical(string) #" << run;
+}
+
+void testSetVertical(Cue::Vertical vertical, bool expectedSet,
+                     Cue::Vertical expectedVertical = Cue::Horizontal)
+{
+  static int run = 0;
+  Cue cue(Cue::WebVTTCue, 0.000, 1.000);
+  if(!expectedSet)
+    expectedVertical = Cue::defaultVertical;
+  ++run;
+  EXPECT_EQ(expectedSet, cue.setVertical(vertical))
+    << "in testSetVertical(enum) #" << run;
+  EXPECT_EQ(expectedVertical, cue.vertical())
+    << "in testSetVertical(enum) #" << run;
 }
 
 TEST(CueSettings,SetId)
@@ -189,9 +205,12 @@ TEST(CueSettings,SetSize)
 
 TEST(CueSettings,SetVertical)
 {
+  const Cue::Vertical defaultVertical = Cue::defaultVertical;
   testSetVertical("",true,Cue::Horizontal);
   testSetVertical("lr",true,Cue::VerticalLeftToRight);
   testSetVertical("rl",true,Cue::VerticalRightToLeft);
+  testSetVertical(static_cast<Cue::Vertical>(-1),false,defaultVertical);
+  testSetVertical(static_cast<Cue::Vertical>(2000),false,defaultVertical);
   testSetVertical(NULL,false);
   testSetVertical("lr ",false);
   testSetVertical("rl ",false);
