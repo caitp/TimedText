@@ -97,15 +97,13 @@ static inline void testToUtf8(unsigned long ucs4, bool expectedIsUnicode,
   //
   // Could do this differently by constructing std::strings, but this isn't
   // so bad, for now.
-  EXPECT_EQ(expectedLen-1,len);
+  EXPECT_EQ(static_cast<int>(expectedLen-1),len);
   EXPECT_STREQ(expectedValue,utf8);
 }
 
 TEST(Unicode,ToUtf8)
 {
-  const char replacement[] = {0xEF,0xBF,0xBD,0x00};
-  char utf8[8] = "";
-  int len;
+  const char replacement[] = "\xef\xbf\xbd";
   // Test that we get the unicode replacement character for codepoints beyond
   // the unicode codepoint limit
   testToUtf8(Unicode::CodepointLimit + 1,false,replacement);
@@ -125,15 +123,15 @@ TEST(Unicode,ToUtf8)
   // For each 7bit ASCII character, make sure that we get the expected single
   // byte result
   for(unsigned long codePoint = 0; codePoint < 0x80; ++codePoint) {
-    const char expected[] = { codePoint & 0xFF, 0x00 };
+    const char expected[] = { static_cast<char>(codePoint & 0xFF), '\x00' };
     testToUtf8(codePoint,true,expected);
   }
 
   // Also make sure that Latin1/ISO-8859-1 characters are encoded correctly:
   for(unsigned long codePoint = 0x80; codePoint < 0x100; ++codePoint) {
-    const char expected[] = { 0xC0 | (codePoint >> 6), 
-                              0x80 | (codePoint & 0x3F),
-                              0x00 };
+    const char expected[] = { static_cast<char>(0xC0 | (codePoint >> 6)), 
+                              static_cast<char>(0x80 | (codePoint & 0x3F)),
+                              '\x00' };
     testToUtf8(codePoint,true,expected);
   }
 }

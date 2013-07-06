@@ -98,8 +98,8 @@ private:
   Timestamp collectTimeStamp(const String &line, int &position);
 
   ParseState state;
-  Client *client;
   Buffer &buffer;
+  Client *client;
   String line;
 
   Status status;

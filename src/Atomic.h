@@ -138,7 +138,7 @@ public:
 class AtomicInt
 {
 public:
-  int value;
+  volatile int value;
   AtomicInt() : value(0) {}
   AtomicInt(int val) : value(val) {}
   operator int() const { return int(value); }
