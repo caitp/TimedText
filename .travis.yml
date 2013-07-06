@@ -11,6 +11,7 @@ env:
   - BUILD_TYPE="Valgrind" BUILD="check --with-valgrind --alltests" CFLAGS="-g -O0" CXXFLAGS="-g -O0" ANALYSIS="" ANALYSIS_ARGS="" PACKAGES="valgrind"
 
 before_install:
+  - 'uname -a'
   - '[[ -z "${PACKAGES}" ]] || sudo apt-get -qq update'
   - '[[ -z "${PACKAGES}" ]] || sudo apt-get -qq install ${PACKAGES}'
 

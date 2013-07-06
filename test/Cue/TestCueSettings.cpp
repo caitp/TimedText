@@ -33,7 +33,7 @@ void testSetAlign(const char *text, bool expectedSet,
                   Cue::Align expectedAlign = Cue::Middle)
 {
   static int run = 0;
-  Cue cue(Cue::WebVTTCue, 0.000, 1.000);
+  Cue cue(WebVTTCue, 0.000, 1.000);
   if(!expectedSet)
     expectedAlign = Cue::defaultAlign;
   ++run;
@@ -47,7 +47,7 @@ void testSetAlign(Cue::Align align, bool expectedSet,
                   Cue::Align expectedAlign = Cue::Middle)
 {
   static int run = 0;
-  Cue cue(Cue::WebVTTCue, 0.000, 1.000);
+  Cue cue(WebVTTCue, 0.000, 1.000);
   if(!expectedSet)
     expectedAlign = Cue::defaultAlign;
   ++run;
@@ -61,7 +61,7 @@ void testSetLine(const char *text, bool expectedSet,
                  int expectedLine = 0, bool expectedSnapToLines = false)
 {
   static int run = 0;
-  Cue cue(Cue::WebVTTCue, 0.000, 1.000);
+  Cue cue(WebVTTCue, 0.000, 1.000);
   if(!expectedSet) {
     expectedLine = Cue::defaultLine;
     expectedSnapToLines = Cue::defaultSnapToLines;
@@ -75,7 +75,7 @@ void testSetLine(const char *text, bool expectedSet,
 void testSetPosition(const char *text, bool expectedSet, int expectedPosition = 0)
 {
   static int run = 0;
-  Cue cue(Cue::WebVTTCue, 0.000, 1.000);
+  Cue cue(WebVTTCue, 0.000, 1.000);
   if(!expectedSet)
     expectedPosition = Cue::defaultPosition;
   ++run;
@@ -86,7 +86,7 @@ void testSetPosition(const char *text, bool expectedSet, int expectedPosition = 
 void testSetSize(const char *text, bool expectedSet, int expectedSize = 0)
 {
   static int run = 0;
-  Cue cue(Cue::WebVTTCue, 0.000, 1.000);
+  Cue cue(WebVTTCue, 0.000, 1.000);
   if(!expectedSet)
     expectedSize = Cue::defaultSize;
   ++run;
@@ -98,7 +98,7 @@ void testSetVertical(const char *text, bool expectedSet,
                      Cue::Vertical expectedVertical = Cue::Horizontal)
 {
   static int run = 0;
-  Cue cue(Cue::WebVTTCue, 0.000, 1.000);
+  Cue cue(WebVTTCue, 0.000, 1.000);
   if(!expectedSet)
     expectedVertical = Cue::defaultVertical;
   ++run;
@@ -112,7 +112,7 @@ void testSetVertical(Cue::Vertical vertical, bool expectedSet,
                      Cue::Vertical expectedVertical = Cue::Horizontal)
 {
   static int run = 0;
-  Cue cue(Cue::WebVTTCue, 0.000, 1.000);
+  Cue cue(WebVTTCue, 0.000, 1.000);
   if(!expectedSet)
     expectedVertical = Cue::defaultVertical;
   ++run;
@@ -291,7 +291,7 @@ void testApplySettings(const char *text, Cue::Align expectedAlign,
   static int run = 1;
   // This is a fairly long-winded function...
   String line = String(text);
-  Cue cue(Cue::WebVTTCue,0.000, 1.000);
+  Cue cue(WebVTTCue,0.000, 1.000);
   cue.applySettings(line);
   EXPECT_EQ(expectedAlign, cue.align())
     << "testApplySettings #" << run;

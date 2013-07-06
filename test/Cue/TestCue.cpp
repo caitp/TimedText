@@ -31,17 +31,17 @@ using namespace TimedText;
 
 TEST(Cue,Assignment)
 {
-	Cue cueA(Cue::WebVTTCue, 0.000, 1.000);
+  Cue cueA(WebVTTCue, 0.000, 1.000);
   Cue cueB;
   cueB = cueA;
-  EXPECT_EQ(Cue::WebVTTCue, cueB.type());
-  EXPECT_EQ(0.000, cueB.startTime().toSeconds());
-  EXPECT_EQ(1.000, cueB.endTime().toSeconds());
+  EXPECT_EQ(WebVTTCue, cueB.type());
+  EXPECT_EQ(0000, cueB.startTime());
+  EXPECT_EQ(1000, cueB.endTime());
 }
 
 TEST(Cue,SetId)
 {
-  Cue cue(Cue::WebVTTCue, 0.000, 1.000);
+  Cue cue(WebVTTCue, 0.000, 1.000);
   EXPECT_STREQ("",cue.id());
   cue.setId("Phnglui mglw nafh Cthulhu R'lyeh wgah nagl fhtagn");
   EXPECT_STREQ("Phnglui mglw nafh Cthulhu R'lyeh wgah nagl fhtagn", cue.id());
@@ -50,7 +50,7 @@ TEST(Cue,SetId)
 
 TEST(Cue,SetText)
 {
-  Cue cue(Cue::WebVTTCue, 0.000, 1.000);
+  Cue cue(WebVTTCue, 0.000, 1.000);
   EXPECT_STREQ("",cue.text());
   cue.setText("Phnglui mglw nafh Cthulhu R'lyeh wgah nagl fhtagn");
   EXPECT_STREQ("Phnglui mglw nafh Cthulhu R'lyeh wgah nagl fhtagn", cue.text());
@@ -59,18 +59,19 @@ TEST(Cue,SetText)
 
 TEST(Cue,SetStartTime)
 {
-  Cue cue(Cue::WebVTTCue, 0.000, 1.000);
-  EXPECT_EQ(0.000,cue.startTime().toSeconds());
-  cue.setStartTime(6667.334);
-  EXPECT_EQ(6667.334,cue.startTime().toSeconds());
+  Cue cue(WebVTTCue, 0.000, 1.000);
+  EXPECT_EQ(0,cue.startTime());
+  cue.setStartTime(6667.500);
+  EXPECT_EQ(6667500,cue.startTime());
   // TODO: Test with TTML Cues too!
 }
 
 TEST(Cue,SetEndTime)
 {
-  Cue cue(Cue::WebVTTCue, 0.000, 1.000);
-  EXPECT_EQ(1.000,cue.endTime().toSeconds());
-  cue.setEndTime(8362.316);
-  EXPECT_EQ(8362.316,cue.endTime().toSeconds());
+  Cue cue(WebVTTCue, 0.000, 1.000);
+  EXPECT_EQ(1000,cue.endTime());
+  cue.setEndTime(8362.500);
+  EXPECT_EQ(8362500,cue.endTime());
   // TODO: Test with TTML Cues too!
 }
+
