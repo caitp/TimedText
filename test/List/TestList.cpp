@@ -45,7 +45,7 @@ void testPrimitiveList()
     EXPECT_TRUE(list.push(T(i))) << name << " #" << run;
   EXPECT_EQ(10, list.size()) << name << " #" << run;
   for(int i=0; i < 10; ++i) {
-    T result;
+    T result = 0;
     EXPECT_TRUE(list.itemAt(i, result)) << name << " #" << run;
     EXPECT_EQ(T(10-i), result) << name << " #" << run;
   }
@@ -60,14 +60,14 @@ void testPrimitiveList()
     EXPECT_TRUE(list.unshift(T(i))) << name << " #" << run;
   EXPECT_EQ(10, list.size()) << name << " #" << run;
   for(int i=0; i < 10; ++i) {
-    T result;
+    T result = 0;
     EXPECT_TRUE(list.itemAt(i, result)) << name << " #" << run;
     EXPECT_EQ(T(i+1), result) << name << " #" << run;
   }
 
   // POP
   for(int i=0; i < 5; ++i) {
-    T result;
+    T result = 0;
     EXPECT_TRUE(list.pop(result)) << name << " #" << run;
     EXPECT_EQ(T(10-i), result) << name << " #" << run;
   }
@@ -75,7 +75,7 @@ void testPrimitiveList()
 
   // SHIFT
   for(int i=0; i < 5; ++i) {
-    T result;
+    T result = 0;
     EXPECT_TRUE(list.shift(result)) << name << " #" << run;
     EXPECT_EQ(T(i+1), result);
   }

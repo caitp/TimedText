@@ -128,6 +128,7 @@ public:
 
   static int parseInt(const char *buffer, int len = -1);
   int parseInt(int &position, int *digits) const;
+  unsigned parseUint(int &position, int *digits) const;
   int skipWhitespace(int &position) const;
 
   String substring(int position) const;

@@ -42,7 +42,7 @@ namespace TimedText
 static bool
 skipBOM(const char *buffer, int &pos, int &len)
 {
-  const char utf8BOM[] = { 0xEF, 0xBB, 0xBF };
+  const char utf8BOM[] = { '\xef', '\xbb', '\xbf' };
   // In any case, skip the UTF-8 BOM if we see one.
   if(pos == 0 && len >= 3
      && !::memcmp(buffer + pos, utf8BOM, sizeof(utf8BOM))) {
@@ -96,7 +96,7 @@ ttmlNamespaceDecl(void *userData, const XML_Char *prefix, const XML_Char *uri)
     "http://www.w3.org/ns/ttml#metadata"
   };
   TTMLSniffer &self = *static_cast<TTMLSniffer *>(userData);
-  for(int i=0; i<sizeof(ttmlns)/sizeof(*ttmlns); ++i) {
+  for(unsigned i=0; i<sizeof(ttmlns)/sizeof(*ttmlns); ++i) {
     const char *ns = ttmlns[i];
     if(!::strcmp(ns,uri)) {
       self.isTTML = true;
@@ -136,7 +136,6 @@ Format
 detectFormat(const char *buffer, int len)
 {
   int pos = 0;
-  const char utf8BOM[] = { 0xEF, 0xBB, 0xBF };
 	if(!buffer)
 		return FormatUnknown;
 	if(len < 0)

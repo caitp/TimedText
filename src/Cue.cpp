@@ -471,7 +471,7 @@ Cue::setAlign(const char *value, int len)
     "left",
     "right"
   };
-  for(int i=0; i<sizeof(values)/sizeof(*values); ++i) {
+  for(int i=0; i<int(sizeof(values)/sizeof(*values)); ++i) {
     if(!::strcmp(value,values[i])) {
       d->align = static_cast<Align>(i);
       return true;
