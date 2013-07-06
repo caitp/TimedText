@@ -71,6 +71,12 @@ Node::Node(NodeType type, NodeElementType elementType)
   }
 }
 
+Node::~Node()
+{
+  if(!d->ref.deref())
+    delete d;
+}
+
 NodeType
 Node::type() const
 {

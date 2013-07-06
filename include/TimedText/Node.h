@@ -81,6 +81,7 @@ public:
 
   Node();
   Node(NodeType type, NodeElementType elementType);
+  ~Node();
 
   NodeType type() const;
   NodeElementType elementType() const;
