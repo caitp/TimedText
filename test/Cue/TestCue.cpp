@@ -31,7 +31,7 @@ using namespace TimedText;
 
 TEST(Cue,Assignment)
 {
-	Cue cueA(WebVTTCue, 0.000, 1.000);
+  Cue cueA(WebVTTCue, 0.000, 1.000);
   Cue cueB;
   cueB = cueA;
   EXPECT_EQ(WebVTTCue, cueB.type());
@@ -61,8 +61,8 @@ TEST(Cue,SetStartTime)
 {
   Cue cue(WebVTTCue, 0.000, 1.000);
   EXPECT_EQ(0.000,cue.startTime().toSeconds());
-  cue.setStartTime(6667.336);
-  EXPECT_EQ(6667.336,cue.startTime().toSeconds());
+  cue.setStartTime(6667.500);
+  EXPECT_EQ(6667.500,cue.startTime().toSeconds());
   // TODO: Test with TTML Cues too!
 }
 
@@ -74,3 +74,4 @@ TEST(Cue,SetEndTime)
   EXPECT_EQ(8362.316,cue.endTime().toSeconds());
   // TODO: Test with TTML Cues too!
 }
+
