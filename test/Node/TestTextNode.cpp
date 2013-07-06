@@ -25,6 +25,75 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#include <TimedText/String.h>
+#include <TimedText/Node.h>
 #include <gtest/gtest.h>
 using namespace TimedText;
+
+TEST(TextNode,Initialize)
+{
+  Node node(LeafNode,TextNode);
+  EXPECT_EQ(LeafNode,node.type());
+  EXPECT_EQ(TextNode,node.element());
+}
+
+TEST(TextNode,GetText)
+{
+  Node node(LeafNode,TextNode);
+  EXPECT_STREQ("", node.text());
+}
+
+TEST(TextNode,GetVoice)
+{
+  Node node(LeafNode,TextNode);
+  EXPECT_STREQ("", node.voice());
+}
+
+TEST(TextNode,GetTimestamp)
+{
+  Node node(LeafNode,TextNode);
+  EXPECT_EQ(MalformedTimestamp,node.timestamp());
+}
+
+TEST(TextNode,GetStyleClasses)
+{
+  Node node(LeafNode,TextNode);
+  EXPECT_STREQ("", node.styleClasses());
+}
+
+TEST(TextNode,SetText)
+{
+  Node node(LeafNode,TextNode);
+  EXPECT_TRUE(node.setText(String()));
+  EXPECT_TRUE(node.setText(String(0)));
+  EXPECT_TRUE(node.setText(String("")));
+  EXPECT_TRUE(node.setText(String("Meow")));
+  EXPECT_STREQ("Meow", node.text());
+}
+
+TEST(TextNode,SetVoice)
+{
+  Node node(LeafNode,TextNode);
+  EXPECT_FALSE(node.setVoice(String()));
+  EXPECT_FALSE(node.setVoice(String(0)));
+  EXPECT_FALSE(node.setVoice(String("")));
+  EXPECT_FALSE(node.setVoice(String("Meow")));
+  EXPECT_STREQ("", node.voice());
+}
+
+TEST(TextNode,SetTimestamp)
+{
+  Node node(LeafNode,TextNode);
+  EXPECT_FALSE(node.setTimestamp(MalformedTimestamp));
+  EXPECT_FALSE(node.setTimestamp(666.0));
+  EXPECT_EQ(MalformedTimestamp, node.timestamp());
+}
+
+TEST(TextNode,SetStyleClasses)
+{
+  Node node(LeafNode,TextNode);
+  EXPECT_FALSE(node.setStyleClasses(String()));
+  EXPECT_FALSE(node.setStyleClasses(String(0)));
+  EXPECT_FALSE(node.setStyleClasses(String("")));
+  EXPECT_FALSE(node.setStyleClasses(String("background-color: #fff; font-family: sans-serif")));
+  EXPECT_STREQ("", node.styleClasses());
+}
