@@ -71,10 +71,26 @@ Node::Node(NodeType type, NodeElementType elementType)
   }
 }
 
+Node::Node(const Node &other)
+  : d(other.d)
+{
+  d->ref.ref();
+}
+
 Node::~Node()
 {
   if(!d->ref.deref())
     delete d;
+}
+
+Node &
+Node::operator=(const Node &other)
+{
+  other.d->ref.ref();
+  if(!d->ref.deref())
+    delete d;
+  d = other.d;
+  return *this;
 }
 
 NodeType

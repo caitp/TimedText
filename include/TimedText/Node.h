@@ -81,7 +81,10 @@ public:
 
   Node();
   Node(NodeType type, NodeElementType elementType);
+  Node(const Node &other);
   ~Node();
+
+  Node &operator=(const Node &other);
 
   // These are pointer comparisons, nothing more!
   // Do not expect any deep equality checks here.

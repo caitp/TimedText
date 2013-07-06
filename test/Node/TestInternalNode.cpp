@@ -93,7 +93,6 @@ TEST(InternalNode,End)
   
   // Need data for this test to be meaningful :(
   EXPECT_TRUE(node.push(leaf));
-  const List<Node> &nodes = node.children();
   Node::iterator it = node.end();
   ASSERT_NE(uintptr(0), uintptr((--it).i));
   EXPECT_EQ(leaf, *it);
@@ -117,7 +116,6 @@ TEST(InternalNode,ConstEnd)
   const Node &ref = node;
   Node leaf(LeafNode,TextNode);
   EXPECT_TRUE(node.push(leaf));
-  const List<Node> &nodes = node.children();
   Node::const_iterator it = ref.end();
   ASSERT_NE(uintptr(0), uintptr((--it).i));
   EXPECT_EQ(leaf, *it);
