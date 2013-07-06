@@ -289,7 +289,7 @@ WebVTTParser::dispatchCue()
   // If this allocation fails, we have no way of notifying the user,
   // currently!
   currentCueText.toString(text);
-  Cue cue(Cue::WebVTTCue, currentStartTime, currentEndTime,
+  Cue cue(WebVTTCue, currentStartTime, currentEndTime,
           currentId, text);
   cue.applySettings(currentSettings);
   currentCues.push(cue);

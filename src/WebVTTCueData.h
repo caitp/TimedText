@@ -25,93 +25,51 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef __TimedText_Cue__
-#define __TimedText_Cue__
+#ifndef __TimedText_WebVTTCueData__
+#define __TimedText_WebVTTCueData__
 
-#include <TimedText/String.h>
-#include <TimedText/Timestamp.h>
-#include <climits>
+#include "CueData.h"
 
 namespace TimedText
 {
 
-enum CueType
-{
-  EmptyCue = 0,
-  WebVTTCue,
-  TTMLCue,
-};
-
-class CueData;
-class Cue
+class WebVTTCueData : public CueData
 {
 public:
-  // WebVTT constants
-  enum Vertical
+  WebVTTCueData()
+    : CueData(WebVTTCue)
   {
-    Horizontal = 0,
-    VerticalLeftToRight,
-    VerticalRightToLeft
-  };
-  enum Align
-  {
-    Start = 0,
-    Middle,
-    End,
-    Left,
-    Right
-  };
-
-  enum
-  {
-    Auto = INT_MAX
-  };
-
-  static const Vertical defaultVertical = Horizontal;
-  static const int defaultLine = Auto;
-  static const bool defaultSnapToLines = true;
-  static const int defaultPosition = 50;
-  static const int defaultSize = 100;
-  static const Align defaultAlign = Middle;
-
-  Cue(CueType type = EmptyCue);
-  Cue(CueType type, Timestamp startTime, Timestamp endTime,
-      const String &id = String(), const String &text = String());
-  Cue(const Cue &other);
-  ~Cue();
-
-  Cue &operator=(const Cue &other);
-
-  CueType type() const;
-  String id() const;
-  String text() const;
-  Timestamp startTime() const;
-  Timestamp endTime() const;
-
-  void setId(const String &id);
-  void setId(const char *id, int len=-1) {
-    setId(String(id,len));
+    resetCueSettings();
   }
-  void setText(const String &text);
-  void setText(const char *id, int len=-1) {
-    setText(String(id,len));
+  WebVTTCueData(const String &id, const String &text)
+    : CueData(WebVTTCue,id, text)
+  {
+    resetCueSettings();
   }
-  void setStartTime(const Timestamp &ts);
-  void setEndTime(const Timestamp &ts);
+  WebVTTCueData(const Timestamp &startTime, const Timestamp &endTime,
+                const String &id, const String &text)
+    : CueData(WebVTTCue,startTime, endTime, id, text)
+  {
+    resetCueSettings();
+  }
 
-  // WebVTT-specific API
-  bool snapToLines() const;
-  int line() const;
-  int size() const;
-  int position() const;
-  Vertical vertical() const;
-  Align align() const;
+  void setId(const String &_id) { id = _id; }
+  void setText(const String &_text) { text = _text; }
+  void setStartTime(const Timestamp &ts) { startTime = ts; }
+  void setEndTime(const Timestamp &ts) { endTime = ts; }
+
+  bool snapToLines() const { return _snapToLines; }
+  int line() const { return _line; }
+  int size() const { return _size; }
+  int position() const { return _position; }
+  Cue::Vertical vertical() const { return _vertical; }
+  Cue::Align align() const { return _align; }
 
   bool setLine(int line, bool snapToLines);
   bool setSize(int size);
   bool setPosition(int position);
-  bool setVertical(Vertical vertical);
-  bool setAlign(Align align);
+  bool setVertical(Cue::Vertical vertical);
+  bool setAlign(Cue::Align align);
 
   bool setLine(const char *value, int len = -1);
   bool setSize(const char *value, int len = -1);
@@ -122,12 +80,14 @@ public:
   void applySettings(const String &settings);
   void resetCueSettings();
 
-protected:
-  CueData *d;
+  bool _snapToLines;
+  int _line;
+  int _size : 8;
+  int _position : 8;
+  Cue::Vertical _vertical : 8;
+  Cue::Align _align : 8;
 };
 
-TT_DECLARE_TYPEINFO(Cue, TT_MOVABLE_TYPE);
+} // TimedText
 
-}
-
-#endif // __TimedText_Cue__
+#endif // __TimedText_WebVTTCueData__
