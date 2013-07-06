@@ -83,6 +83,17 @@ public:
   Node(NodeType type, NodeElementType elementType);
   ~Node();
 
+  // These are pointer comparisons, nothing more!
+  // Do not expect any deep equality checks here.
+  inline bool operator==(const Node &other) const
+  {
+    return d == other.d;
+  }
+  inline bool operator!=(const Node &other) const
+  {
+    return !(operator==(other));
+  }
+
   NodeType type() const;
   NodeElementType elementType() const;
   inline NodeElementType element() const { return elementType(); }
@@ -111,7 +122,7 @@ public:
 
   // Return copy of node list -- always empty in the
   // case of leaf nodes.
-  List<Node> children() const;
+  const List<Node> &children() const;
 
   // Wrappers for list routines in internal nodes.
   // Will always fail for leaf nodes.

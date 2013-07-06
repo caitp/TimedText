@@ -70,7 +70,8 @@ ListData::Data *ListData::sharedNull()
 }
 
 ListData::Data *ListData::detach(int alloc) {
-  Data *x = static_cast<Data *>(::malloc(DataHeaderSize + d->alloc * sizeof(void *)));
+  Data *x = static_cast<Data *>(
+    ::malloc(DataHeaderSize + d->alloc * sizeof(void *)));
   if(!x)
     return 0;
   x->ref = 1;

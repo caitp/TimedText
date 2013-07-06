@@ -25,6 +25,100 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#include <TimedText/String.h>
+#include <TimedText/Node.h>
 #include <gtest/gtest.h>
+#include <stdlib.h>
 using namespace TimedText;
+
+// Tests for internal nodes are shared, because the same method is used
+// for each internal node class.
+TEST(InternalNode,GetChildren)
+{
+  Node node(InternalNode,VoiceNode);
+  const List<Node> &children = node.children();
+  EXPECT_TRUE(children.isEmpty());
+}
+
+TEST(InternalNode,PushPop)
+{
+  Node node(InternalNode,VoiceNode);
+  Node leaf(LeafNode,TextNode);
+  Node result;
+  EXPECT_TRUE(node.push(leaf));
+  EXPECT_EQ(1, node.childCount());
+  EXPECT_TRUE(node.pop(result));
+  EXPECT_EQ(LeafNode, result.type());
+  EXPECT_EQ(TextNode, result.element());
+}
+
+TEST(InternalNode,UnshiftShift)
+{
+  Node node(InternalNode,BoldNode);
+  Node leaf(LeafNode,TextNode);
+  Node result;
+  EXPECT_TRUE(node.unshift(leaf));
+  EXPECT_EQ(1, node.childCount());
+  EXPECT_TRUE(node.shift(result));
+  EXPECT_EQ(LeafNode, result.type());
+  EXPECT_EQ(TextNode, result.element());
+}
+
+TEST(InternalNode,InsertTake)
+{
+  Node node(InternalNode,ItalicNode);
+  Node leaf(LeafNode,TextNode);
+  Node result;
+  EXPECT_TRUE(node.insert(0, leaf));
+  EXPECT_EQ(1, node.childCount());
+  EXPECT_TRUE(node.take(0, result));
+  EXPECT_EQ(LeafNode,result.type());
+  EXPECT_EQ(TextNode,result.element());
+}
+
+TEST(InternalNode,Begin)
+{
+  Node node(InternalNode,UnderlineNode);
+  Node leaf(LeafNode,TextNode);
+  // Need data for this test to be meaningful :(
+  EXPECT_TRUE(node.push(leaf));
+  Node::iterator it = node.begin();
+  ASSERT_NE(uintptr(0), uintptr(it.i));
+  EXPECT_EQ(leaf, *it);
+}
+
+TEST(InternalNode,End)
+{
+  Node node(InternalNode,DivNode);
+  Node leaf(LeafNode,TextNode);
+  
+  // Need data for this test to be meaningful :(
+  EXPECT_TRUE(node.push(leaf));
+  const List<Node> &nodes = node.children();
+  Node::iterator it = node.end();
+  ASSERT_NE(uintptr(0), uintptr((--it).i));
+  EXPECT_EQ(leaf, *it);
+}
+
+TEST(InternalNode,ConstBegin)
+{
+  Node node(InternalNode,SpanNode);
+  const Node &ref = node;
+  Node leaf(LeafNode,TextNode);
+  // Need data for this test to be meaningful :(
+  EXPECT_TRUE(node.push(leaf));
+  Node::const_iterator it = ref.begin();
+  ASSERT_NE(uintptr(0), uintptr(it.i));
+  EXPECT_EQ(leaf, *it);
+}
+
+TEST(InternalNode,ConstEnd)
+{
+  Node node(InternalNode,PNode);
+  const Node &ref = node;
+  Node leaf(LeafNode,TextNode);
+  EXPECT_TRUE(node.push(leaf));
+  const List<Node> &nodes = node.children();
+  Node::const_iterator it = ref.end();
+  ASSERT_NE(uintptr(0), uintptr((--it).i));
+  EXPECT_EQ(leaf, *it);
+}

@@ -90,10 +90,11 @@ NodeData::setStyleClasses(const String &ts)
   return false;
 }
 
-List<Node>
+const List<Node> &
 NodeData::children() const
 {
-  return List<Node>();
+  static const List<Node> empty_list;
+  return empty_list;
 }
 
 bool
@@ -176,7 +177,7 @@ InternalNodeData::~InternalNodeData()
 String
 InternalNodeData::voice() const
 {
-  if(type == VoiceNode)
+  if(element == VoiceNode)
     return annotation;
   return NodeData::voice();
 }
@@ -206,7 +207,7 @@ InternalNodeData::setStyleClasses(const String &styles)
   return true;
 }
 
-List<Node>
+const List<Node> &
 InternalNodeData::children() const
 {
   return nodes;

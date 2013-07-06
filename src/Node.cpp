@@ -137,7 +137,7 @@ Node::setStyleClasses(const String &style)
   return d->setStyleClasses(style);
 }
 
-List<Node>
+const List<Node> &
 Node::children() const
 {
   return d->children();

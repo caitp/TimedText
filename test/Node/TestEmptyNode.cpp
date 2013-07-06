@@ -31,7 +31,7 @@ using namespace TimedText;
 
 TEST(EmptyNode,Initialize)
 {
-	Node node;
+  Node node;
   EXPECT_EQ(EmptyNode,node.type());
   EXPECT_EQ(NullNode,node.element());
 }
@@ -63,7 +63,7 @@ TEST(EmptyNode,GetStyleClasses)
 TEST(EmptyNode,GetChildren)
 {
   Node node;
-  List<Node> children = node.children();
+  const List<Node> &children = node.children();
   EXPECT_TRUE(children.isEmpty());
 }
 

@@ -51,7 +51,7 @@ public:
   virtual bool setVoice(const String &ts);
   virtual bool setText(const String &ts);
   virtual bool setStyleClasses(const String &ts);
-  virtual List<Node> children() const;
+  virtual const List<Node> &children() const;
   virtual bool push(const Node &node);
   virtual bool pop(Node &result);
   virtual bool unshift(const Node &node);
@@ -80,7 +80,7 @@ public:
   bool setVoice(const String &voice);
   String styleClasses() const;
   bool setStyleClasses(const String &ts);
-  List<Node> children() const;
+  const List<Node> &children() const;
   bool push(const Node &node);
   bool pop(Node &result);
   bool unshift(const Node &node);
