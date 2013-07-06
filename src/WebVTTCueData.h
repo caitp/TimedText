@@ -80,12 +80,15 @@ public:
   void applySettings(const String &settings);
   void resetCueSettings();
 
+  bool tree(Node &result) const;
+
   bool _snapToLines;
   int _line;
   int _size : 8;
   int _position : 8;
   Cue::Vertical _vertical : 8;
   Cue::Align _align : 8;
+  Node nodes;
 };
 
 } // TimedText

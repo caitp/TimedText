@@ -187,7 +187,7 @@ public:
   }
 
   // Take from arbitrary position
-  inline bool take(int i, T *&result) {
+  inline bool take(int i, T &result) {
     if(i < 0 || i >= p.size())
       return false;
     detach();

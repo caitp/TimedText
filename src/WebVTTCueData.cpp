@@ -299,4 +299,11 @@ WebVTTCueData::resetCueSettings()
   setAlign(Cue::defaultAlign);
 }
 
+bool
+WebVTTCueData::tree(Node &result) const
+{
+  result = nodes;
+  return true;
+}
+
 } // TimedText

@@ -30,6 +30,7 @@
 
 #include <TimedText/String.h>
 #include <TimedText/Timestamp.h>
+#include <TimedText/Node.h>
 #include <climits>
 
 namespace TimedText
@@ -121,6 +122,10 @@ public:
 
   void applySettings(const String &settings);
   void resetCueSettings();
+
+  // Acquire a reference to the node tree
+  bool tree(Node &result) const;
+  inline bool nodeTree(Node &result) const { return tree(result); }
 
 protected:
   CueData *d;
