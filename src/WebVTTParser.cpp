@@ -229,7 +229,7 @@ WebVTTParser::collectTimeStamp(const String &line, int &position)
   if(position < 0 || position >= line.length() || !Char::isAsciiDigit(line[0]))
     return MalformedTimestamp;
 
-  int value1 = line.parseInt(position, &digits);
+  unsigned value1 = line.parseUint(position, &digits);
   // Only the hours field is flexible in terms of how many digits
   // are valid.
   if(digits != 2 || value1 > 59)
@@ -241,13 +241,13 @@ WebVTTParser::collectTimeStamp(const String &line, int &position)
   if(position >= line.length() || !Char::isAsciiDigit(line[position]))
     return MalformedTimestamp;
 
-  int value2 = line.parseInt(position, &digits);
+  unsigned value2 = line.parseUint(position, &digits);
   // TODO: Be more flexible here, we don't necessarily want to die
   // just because of a marginally invalid time component
   if(digits != 2)
     return MalformedTimestamp;
 
-  int value3;
+  unsigned value3;
   if(mode == Hours || (position < line.length() && line[position] == ':')) {
     // If we don't have at least 3 components, or we have 3 but are expecting
     // 4, then die. TODO: As above, we can be more flexible here...
@@ -256,7 +256,7 @@ WebVTTParser::collectTimeStamp(const String &line, int &position)
     // If it's not a number, there isn't much we can do with it...
     if(position >= line.length() || !Char::isAsciiDigit(line[position]))
       return MalformedTimestamp;
-    value3 = line.parseInt(position, &digits);
+    value3 = line.parseUint(position, &digits);
     // TODO: Again, we should be more flexible here...
     if(digits != 2)
       return MalformedTimestamp;
@@ -273,7 +273,7 @@ WebVTTParser::collectTimeStamp(const String &line, int &position)
   if(position >= line.length() || !Char::isAsciiDigit(line[position]))
     return MalformedTimestamp;
 
-  int value4 = line.parseInt(position, &digits);
+  unsigned value4 = line.parseUint(position, &digits);
   // TODO: same as above...
   if(digits != 3)
     return MalformedTimestamp;
@@ -319,7 +319,6 @@ WebVTTParser::dropCue()
 bool
 WebVTTParser::parse(Status *pstatus)
 {
-  int n;
   if(status == Aborted)
     return false;
   if(state == Initial)

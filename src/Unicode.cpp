@@ -51,19 +51,19 @@ static const struct validUtf8Sequence
 } validUtf8[numUtf8Sequences] =
 {
 //Low        High      #, Byte 1       Byte 2      Byte 3      Byte 4
-  {0x0000,   0x007F,   1, {0x00, 0x7F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}},
-  {0x0080,   0x07FF,   2, {0xC2, 0xDF, 0x80, 0xBF, 0x00, 0x00, 0x00, 0x00}},
-  {0x0800,   0x0FFF,   3, {0xE0, 0xE0, 0xA0, 0xBF, 0x80, 0xBF, 0x00, 0x00}},
-  {0x1000,   0xFFFF,   3, {0xE1, 0xEF, 0x80, 0xBF, 0x80, 0xBF, 0x00, 0x00}},
-  {0x10000,  0x3FFFF,  4, {0xF0, 0xF0, 0x90, 0xBF, 0x80, 0xBF, 0x80, 0xBF}},
-  {0x40000,  0xFFFFF,  4, {0xF1, 0xF3, 0x80, 0xBF, 0x80, 0xBF, 0x80, 0xBF}},
-  {0x100000, 0x10FFFF, 4, {0xF4, 0xF4, 0x80, 0x8F, 0x80, 0xBF, 0x80, 0xBF}} 
+  {0x0000,   0x007F,   1, {'\x00', '\x7f', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00'}},
+  {0x0080,   0x07FF,   2, {'\xc2', '\xdf', '\x80', '\xbf', '\x00', '\x00', '\x00', '\x00'}},
+  {0x0800,   0x0FFF,   3, {'\xe0', '\xe0', '\xa0', '\xbf', '\x80', '\xbf', '\x00', '\x00'}},
+  {0x1000,   0xFFFF,   3, {'\xe1', '\xef', '\x80', '\xbf', '\x80', '\xbf', '\x00', '\x00'}},
+  {0x10000,  0x3FFFF,  4, {'\xf0', '\xf0', '\x90', '\xbf', '\x80', '\xbf', '\x80', '\xbf'}},
+  {0x40000,  0xFFFFF,  4, {'\xf1', '\xf3', '\x80', '\xbf', '\x80', '\xbf', '\x80', '\xbf'}},
+  {0x100000, 0x10FFFF, 4, {'\xf4', '\xf4', '\x80', '\x8f', '\x80', '\xbf', '\x80', '\xbf'}} 
 };
 
 bool
 Unicode::toUtf8(unsigned long ucs4, char *out, int &len)
 {
-  const char replacement[] = {0xEF,0xBF,0xBD};
+  const char replacement[] = {'\xef','\xbf','\xbd'};
   bool isUC = isChar(ucs4);
   if(!isUC) {
     memcpy(out,replacement,3);
@@ -142,7 +142,7 @@ bool
 Unicode::toValidUtf8(char *out, int alloc, int &olen,
                      const char *in, int len)
 {
-  const char replacement[] = {0xEF,0xBF,0xBD};
+  const char replacement[] = {'\xef','\xbf','\xbd'};
   olen = 0;
   if(!in || !out || alloc <= 0)
     return false;

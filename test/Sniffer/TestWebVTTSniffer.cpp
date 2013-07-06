@@ -33,11 +33,11 @@ TEST(Sniffer,WebVTT)
 {
   // Good version
   EXPECT_EQ(FormatWebVTT,detectFormat("WEBVTT"));
-  static char webvttWithBOM[] = { 0xEF,0xBB,0xBF,'W','E','B','V','T','T' };
+  static char webvttWithBOM[] = "\xef\xbb\xbfWEBVTT";
   EXPECT_EQ(FormatWebVTT,detectFormat(webvttWithBOM));
 
   // Test lower-case version (should not sniff FormatWebVTT)
   EXPECT_EQ(FormatUnknown,detectFormat("webvtt"));
-  static char mebvttWithBOM[] = { 0xEF,0xBB,0xBF,'w','e','b','v','t','t' };
+  static char mebvttWithBOM[] = "\xef\xbb\xbfMEBVTT";
   EXPECT_EQ(FormatUnknown,detectFormat(mebvttWithBOM));
 }

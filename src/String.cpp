@@ -75,7 +75,9 @@ void
 String::freeData(Data *x)
 {
   if(x->ref == 0)
-    ::free(x);
+    // This should ideally be optimized out, but compiler is stupid...
+    if(x != &sharedNull)
+      ::free(x);
 }
 
 bool
@@ -226,6 +228,31 @@ String::parseInt(int &position, int *digits) const
   const int radix = 10;
   int value = 0;
   int i = 0;
+  bool neg = false;
+  if(digits)
+    *digits = 0;
+  if(position < 0 || position >= length())
+    return 0;
+  // TODO:
+  // Can we make this not suck for EBCDIC systems? Do we care?
+  if(position < length() && d->text[position] == '-')
+    ++position, neg=true;
+  for( ; position < length() && Char::isAsciiDigit(d->text[position]); ++i )
+    value = (value * radix) + d->text[position++] - '0';
+  if(digits)
+    *digits = i;
+  if(neg)
+    value = -value;
+  return value;
+}
+
+unsigned
+String::parseUint(int &position, int *digits) const
+{
+  // Radix is always 10 here
+  const int radix = 10;
+  unsigned value = 0;
+  int i = 0;
   if(digits)
     *digits = 0;
   if(position < 0 || position >= length())
@@ -252,7 +279,6 @@ String::parseInt(const char *buffer, int len)
   const int radix = 10;
   bool neg = false;
   int value = 0;
-  int i = 0;
   int d = 0;
   for( int i=0; i<len; ++i) {
     char c = buffer[i];

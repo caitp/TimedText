@@ -42,7 +42,7 @@ enum Format
 
 Format detectFormat(const char *buffer, int len=-1);
 
-static Format detectFormat(const String &string)
+static inline Format detectFormat(const String &string)
 {
 	return detectFormat(string.text(),string.length());
 }

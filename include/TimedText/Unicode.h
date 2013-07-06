@@ -110,7 +110,7 @@ public:
   static void utf8MaskLeadByte(char &leadByte, int trailBytes)
   {
   	unsigned char c = (unsigned char)leadByte;
-  	leadByte = char(c & (1 << (6 - trailBytes)) - 1);
+  	leadByte = char(c & ((1 << (6 - trailBytes)) - 1));
   }
 
   // Return length in bytes of validated UTF8 string (Unicode non-characters

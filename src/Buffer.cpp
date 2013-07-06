@@ -139,7 +139,7 @@ Buffer::getline(String &result, int maxlen)
 retry:
   n = 0;
   lock();
-  while(!finished && n < sizeof(tmp) && next(c)) {
+  while(!finished && n < int(sizeof(tmp)) && next(c)) {
     if(c == '\n') {
       finished = true;
       wasCR = false;
@@ -236,7 +236,7 @@ Buffer::collectWord(String &result, int *len)
 
 retry:
   lock();
-  while(n < sizeof(tmp) && next(c)) {
+  while(n < int(sizeof(tmp)) && next(c)) {
     if(!Char::isHtml5Space(c))
       tmp[n++] = c;
     else {
@@ -247,7 +247,7 @@ retry:
   }
   unlock();
 
-  if(n >= sizeof(tmp) || eof())
+  if(n >= int(sizeof(tmp)) || eof())
     finished = true;
 
   if(!finished && isAsynchronous()) {
