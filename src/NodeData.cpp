@@ -156,6 +156,12 @@ NodeData::end() const
   return List<Node>::const_iterator();
 }
 
+int
+NodeData::childCount() const
+{
+  return 0;
+}
+
 // InternalNode specialization
 
 InternalNodeData::InternalNodeData(NodeType type, NodeElementType elem)
@@ -264,6 +270,12 @@ NodeData::const_iterator
 InternalNodeData::end() const
 {
   return nodes.end();
+}
+
+int
+InternalNodeData::childCount() const
+{
+  return nodes.count();
 }
 
 // Leaf node specializations

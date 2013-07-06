@@ -62,6 +62,7 @@ public:
   virtual iterator end();
   virtual const_iterator begin() const;
   virtual const_iterator end() const;
+  virtual int childCount() const;
   AtomicInt ref;
   NodeType type : 2;
   NodeElementType element : 30;
@@ -90,6 +91,7 @@ public:
   iterator end();
   const_iterator begin() const;
   const_iterator end() const;
+  int childCount() const;
 
   String annotation;
   String classes;

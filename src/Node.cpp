@@ -71,6 +71,18 @@ Node::Node(NodeType type, NodeElementType elementType)
   }
 }
 
+NodeType
+Node::type() const
+{
+  return d->type;
+}
+
+NodeElementType
+Node::elementType() const
+{
+  return d->element;
+}
+
 Timestamp
 Node::timestamp() const
 {
@@ -185,6 +197,12 @@ Node::end() const
 {
   const NodeData *x = d;
   return x->end();
+}
+
+int
+Node::childCount() const
+{
+  return d->childCount();
 }
 
 } // TimedText

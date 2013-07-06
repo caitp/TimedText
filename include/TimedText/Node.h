@@ -120,6 +120,7 @@ public:
   bool shift(Node &result);
   bool insert(int i, const Node &node);
   bool take(int i, Node &result);
+  int childCount() const;
 
   // Iterators over child nodes
   // These iterators will be invalid in the case of leafs
