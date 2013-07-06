@@ -40,6 +40,11 @@ def options(ctx):
 
 def configure(ctx):
 	ctx.load("compiler_cxx compiler_c waf_unit_test xcode msvs make eclipse")
+	#Use -Wall for gcc/g++/clang/clang++/MSVC
+	if not "-Wall" in ctx.env.CFLAGS:
+		ctx.env.CFLAGS.append("-Wall")
+	if not "-Wall" in ctx.env.CXXFLAGS:
+		ctx.env.CXXFLAGS.append("-Wall")
 	ctx.recurse(SUBDIRS)
 
 def build(ctx):
