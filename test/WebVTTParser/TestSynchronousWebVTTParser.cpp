@@ -38,7 +38,7 @@ void testParseHeader(const char *text, bool shouldFinal,
   SynchronousBuffer buffer;
   WebVTTParser parser(buffer);
   ++run;
-  EXPECT_TRUE(buffer.refill(text, -1, shouldFinal))
+  EXPECT_TRUE(buffer.refill(text, -1.0, shouldFinal))
     << "in testParseHeader #" << run;
   EXPECT_EQ(shouldParse, parser.parseHeader())
     << "in testParseHeader #" << run << " when trying to parse \"" << text << "\"";
@@ -67,8 +67,8 @@ TEST(SynchronousWebVTTParser, ParseHeader)
 }
 
 void testCollectTimingsAndSettings(const char *text, bool isOk,
-                                   double expectedStartTime,
-                                   double expectedEndTime,
+                                   Timestamp expectedStartTime,
+                                   Timestamp expectedEndTime,
                                    const char *expectedSettings = "")
 {
   static int run = 0;
@@ -79,19 +79,19 @@ void testCollectTimingsAndSettings(const char *text, bool isOk,
   String line;
   ++run;
 
-  // The MalformedTimestamp value is -1 milliseconds, but it's simpler to
-  // write -1.
+  // The MalformedTimestamp value is -1.0 milliseconds, but it's simpler to
+  // write -1.0.
   if(expectedStartTime < 0)
-    expectedStartTime = -0.001;
+    expectedStartTime = MalformedTimestamp;
   if(expectedEndTime < 0)
-    expectedEndTime = -0.001;
-  EXPECT_TRUE(buffer.refill(text, -1, true));
+    expectedEndTime = MalformedTimestamp;
+  EXPECT_TRUE(buffer.refill(text, -1.0, true));
   EXPECT_TRUE(buffer.getline(line));
   EXPECT_EQ(expectedState, parser.collectTimingsAndSettings(line))
     << "in testCollectTimingsAndSettings #" << run;
-  EXPECT_EQ(expectedStartTime,parser.currentStartTime.toSeconds())
+  EXPECT_EQ(expectedStartTime,parser.currentStartTime)
     << "in testCollectTimingsAndSettings #" << run;
-  EXPECT_EQ(expectedEndTime,parser.currentEndTime.toSeconds())
+  EXPECT_EQ(expectedEndTime,parser.currentEndTime)
     << "in testCollectTimingsAndSettings #" << run;
   EXPECT_STREQ(expectedSettings,parser.currentSettings.text())
     << "in testCollectTimingsAndSettings #" << run;
@@ -111,16 +111,16 @@ TEST(SynchronousWebVTTParser, CollectTimingsAndSettings)
   testCollectTimingsAndSettings("00:35.555  -->  00:35.666", true, 35.555, 35.666);
 
   // Different syntax errors
-  testCollectTimingsAndSettings("01:0:35.555-->02:00:35.666", false, -1, -1);
-  testCollectTimingsAndSettings("1:00:35.555-->2:0:35.666", false, 3635.555, -1);
-  testCollectTimingsAndSettings("00:5.555-->00:35.666", false, -1, -1);
-  testCollectTimingsAndSettings("00:02.555 --> 00:5.666", false, 2.555, -1);
-  testCollectTimingsAndSettings("00:35.55\t-->\t00:35.066", false, -1, -1);
-  testCollectTimingsAndSettings("00:35.055\f-->\f00:35.66", false, 35.055, -1);
-  testCollectTimingsAndSettings(":35.555\f\f-->\f\f00:35.666", false, -1, -1);
-  testCollectTimingsAndSettings("00:35.555\t\t-->\t\t:35.666", false, 35.555, -1);
-  testCollectTimingsAndSettings("00:35.555  --->  00:35.666", false, 35.555, -1);
-  testCollectTimingsAndSettings("00:35.555  -->>  00:35.666", false, 35.555, -1);
+  testCollectTimingsAndSettings("01:0:35.555-->02:00:35.666", false, -1.0, -1.0);
+  testCollectTimingsAndSettings("1:00:35.555-->2:0:35.666", false, 3635.555, -1.0);
+  testCollectTimingsAndSettings("00:5.555-->00:35.666", false, -1.0, -1.0);
+  testCollectTimingsAndSettings("00:02.555 --> 00:5.666", false, 2.555, -1.0);
+  testCollectTimingsAndSettings("00:35.55\t-->\t00:35.066", false, -1.0, -1.0);
+  testCollectTimingsAndSettings("00:35.055\f-->\f00:35.66", false, 35.055, -1.0);
+  testCollectTimingsAndSettings(":35.555\f\f-->\f\f00:35.666", false, -1.0, -1.0);
+  testCollectTimingsAndSettings("00:35.555\t\t-->\t\t:35.666", false, 35.555, -1.0);
+  testCollectTimingsAndSettings("00:35.555  --->  00:35.666", false, 35.555, -1.0);
+  testCollectTimingsAndSettings("00:35.555  -->>  00:35.666", false, 35.555, -1.0);
 }
 
 const char simpleWebVTTDocument[] =
@@ -161,10 +161,10 @@ TEST(SynchronousWebVTTParser,RetrieveCues)
   Cue cue1, cue2;
   EXPECT_TRUE(cues.itemAt(0,cue1));
   EXPECT_TRUE(cues.itemAt(1,cue2));
-  EXPECT_EQ(0.000, cue1.startTime().toSeconds());
-  EXPECT_EQ(4.667, cue1.endTime().toSeconds());
+  EXPECT_EQ(0, cue1.startTime());
+  EXPECT_EQ(4667, cue1.endTime());
   EXPECT_STREQ("Cue #1", cue1.text());
-  EXPECT_EQ(9.000, cue2.startTime().toSeconds());
-  EXPECT_EQ(14.324, cue2.endTime().toSeconds());
+  EXPECT_EQ(9000, cue2.startTime());
+  EXPECT_EQ(14324, cue2.endTime());
   EXPECT_STREQ("Cue #2", cue2.text());
 }
