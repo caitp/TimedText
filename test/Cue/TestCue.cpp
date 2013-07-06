@@ -35,8 +35,8 @@ TEST(Cue,Assignment)
   Cue cueB;
   cueB = cueA;
   EXPECT_EQ(WebVTTCue, cueB.type());
-  EXPECT_EQ(0.000, cueB.startTime().toSeconds());
-  EXPECT_EQ(1.000, cueB.endTime().toSeconds());
+  EXPECT_EQ(0000, cueB.startTime());
+  EXPECT_EQ(1000, cueB.endTime());
 }
 
 TEST(Cue,SetId)
@@ -60,18 +60,18 @@ TEST(Cue,SetText)
 TEST(Cue,SetStartTime)
 {
   Cue cue(WebVTTCue, 0.000, 1.000);
-  EXPECT_EQ(0.000,cue.startTime().toSeconds());
+  EXPECT_EQ(0,cue.startTime());
   cue.setStartTime(6667.500);
-  EXPECT_EQ(6667.500,cue.startTime().toSeconds());
+  EXPECT_EQ(6667500,cue.startTime());
   // TODO: Test with TTML Cues too!
 }
 
 TEST(Cue,SetEndTime)
 {
   Cue cue(WebVTTCue, 0.000, 1.000);
-  EXPECT_EQ(1.000,cue.endTime().toSeconds());
-  cue.setEndTime(8362.316);
-  EXPECT_EQ(8362.316,cue.endTime().toSeconds());
+  EXPECT_EQ(1000,cue.endTime());
+  cue.setEndTime(8362.500);
+  EXPECT_EQ(8362500,cue.endTime());
   // TODO: Test with TTML Cues too!
 }
 

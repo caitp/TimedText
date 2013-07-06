@@ -233,7 +233,7 @@ WebVTTCueData::setAlign(const char *value, int len)
     "left",
     "right"
   };
-  for(int i=0; i<sizeof(values)/sizeof(*values); ++i) {
+  for(int i=0; i<int(sizeof(values)/sizeof(*values)); ++i) {
     if(!::strcmp(value,values[i])) {
       _align = static_cast<Cue::Align>(i);
       return true;
