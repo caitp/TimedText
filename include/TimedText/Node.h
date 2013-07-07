@@ -93,6 +93,7 @@ public:
 
   Node();
   Node(NodeType type, NodeElementType elementType);
+  Node(NodeElementType type);
   Node(const Node &other);
   ~Node();
 
@@ -119,6 +120,9 @@ public:
   String voice() const;
   // Text if elementType == TextNode
   String text() const;
+  // BCP47 Language Code if elementType == LangNode
+  String lang() const;
+
   // space-separated CSS classes, for internal nodes -- else null String
   // TTML does not support the 'class' attribute in its model for any
   // internal nodes, and so styleClasses() for TTML nodes will always
@@ -132,6 +136,8 @@ public:
   bool setVoice(const String &voice);
   // Will fail for non TextNodes
   bool setText(const String &text);
+  // Will fail for non LangNodes
+  bool setLang(const String &text);
   // Will fail for non-InternalNodes
   bool setStyleClasses(const String &style);
 

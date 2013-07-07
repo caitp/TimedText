@@ -54,6 +54,12 @@ TEST(ClassNode,GetTimestamp)
   EXPECT_EQ(MalformedTimestamp,node.timestamp());
 }
 
+TEST(ClassNode,GetLang)
+{
+  Node node(InternalNode,ClassNode);
+  EXPECT_STREQ("", node.lang());
+}
+
 TEST(ClassNode,GetStyleClasses)
 {
   Node node(InternalNode,ClassNode);
@@ -86,6 +92,16 @@ TEST(ClassNode,SetTimestamp)
   EXPECT_FALSE(node.setTimestamp(MalformedTimestamp));
   EXPECT_FALSE(node.setTimestamp(666.0));
   EXPECT_EQ(MalformedTimestamp, node.timestamp());
+}
+
+TEST(ClassNode,SetLang)
+{
+  Node node(InternalNode,ClassNode);
+  EXPECT_FALSE(node.setLang(String()));
+  EXPECT_FALSE(node.setLang(String(0)));
+  EXPECT_FALSE(node.setLang(String("")));
+  EXPECT_FALSE(node.setLang(String("Meow")));
+  EXPECT_STREQ("", node.lang());
 }
 
 TEST(ClassNode,SetStyleClasses)

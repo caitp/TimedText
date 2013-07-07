@@ -30,6 +30,18 @@
 #include <stdlib.h>
 using namespace TimedText;
 
+TEST(InternalNode,Initialize)
+{
+  // Trying to create an internal node with invalid element types should
+  // always fail, and return an EmptyNode instead.
+  Node node(InternalNode,static_cast<NodeElementType>(FirstNodeElementType));
+  EXPECT_EQ(EmptyNode,node.type());
+  EXPECT_EQ(NullNode,node.element());
+  Node node2(InternalNode,static_cast<NodeElementType>(LastNodeElementType));
+  EXPECT_EQ(EmptyNode,node2.type());
+  EXPECT_EQ(NullNode,node2.element());
+}
+
 // Tests for internal nodes are shared, because the same method is used
 // for each internal node class.
 TEST(InternalNode,GetChildren)

@@ -46,10 +46,12 @@ public:
   virtual Timestamp timestamp() const;
   virtual String voice() const;
   virtual String text() const;
+  virtual String lang() const;
   virtual String styleClasses() const;
   virtual bool setTimestamp(const Timestamp &ts);
   virtual bool setVoice(const String &ts);
   virtual bool setText(const String &ts);
+  virtual bool setLang(const String &lang);
   virtual bool setStyleClasses(const String &ts);
   virtual const List<Node> &children() const;
   virtual bool push(const Node &node);
@@ -74,10 +76,8 @@ class InternalNodeData : public NodeData
 {
 public:
   InternalNodeData(NodeType type, NodeElementType elem);
-  ~InternalNodeData();
+  virtual ~InternalNodeData();
 
-  String voice() const;
-  bool setVoice(const String &voice);
   String styleClasses() const;
   bool setStyleClasses(const String &ts);
   const List<Node> &children() const;
@@ -93,9 +93,32 @@ public:
   const_iterator end() const;
   int childCount() const;
 
-  String annotation;
   String classes;
   List<Node> nodes;
+};
+
+class VoiceNodeData : public InternalNodeData
+{
+public:
+  VoiceNodeData();
+  ~VoiceNodeData();
+
+  String voice() const;
+  bool setVoice(const String &voice);
+
+  String speaker;
+};
+
+class LangNodeData : public InternalNodeData
+{
+public:
+  LangNodeData();
+  ~LangNodeData();
+
+  String lang() const;
+  bool setLang(const String &lang);
+
+  String language;
 };
 
 // Small number of LeafNode specializations

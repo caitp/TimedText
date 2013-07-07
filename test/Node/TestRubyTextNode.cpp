@@ -54,6 +54,12 @@ TEST(RubyTextNode,GetTimestamp)
   EXPECT_EQ(MalformedTimestamp,node.timestamp());
 }
 
+TEST(RubyTextNode,GetLang)
+{
+  Node node(InternalNode,RubyTextNode);
+  EXPECT_STREQ("", node.lang());
+}
+
 TEST(RubyTextNode,GetStyleClasses)
 {
   Node node(InternalNode,RubyTextNode);
@@ -86,6 +92,16 @@ TEST(RubyTextNode,SetTimestamp)
   EXPECT_FALSE(node.setTimestamp(MalformedTimestamp));
   EXPECT_FALSE(node.setTimestamp(666.0));
   EXPECT_EQ(MalformedTimestamp, node.timestamp());
+}
+
+TEST(RubyTextNode,SetLang)
+{
+  Node node(InternalNode,RubyTextNode);
+  EXPECT_FALSE(node.setLang(String()));
+  EXPECT_FALSE(node.setLang(String(0)));
+  EXPECT_FALSE(node.setLang(String("")));
+  EXPECT_FALSE(node.setLang(String("Meow")));
+  EXPECT_STREQ("", node.lang());
 }
 
 TEST(RubyTextNode,SetStyleClasses)

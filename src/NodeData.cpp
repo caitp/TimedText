@@ -61,6 +61,12 @@ NodeData::text() const
 }
 
 String
+NodeData::lang() const
+{
+  return String();
+}
+
+String
 NodeData::styleClasses() const
 {
   return String();
@@ -79,7 +85,13 @@ NodeData::setVoice(const String &ts)
 }
 
 bool
-NodeData::setText(const String &ts)
+NodeData::setText(const String &text)
+{
+  return false;
+}
+
+bool
+NodeData::setLang(const String &lang)
 {
   return false;
 }
@@ -175,27 +187,9 @@ InternalNodeData::~InternalNodeData()
 }
 
 String
-InternalNodeData::voice() const
-{
-  if(element == VoiceNode)
-    return annotation;
-  return NodeData::voice();
-}
-
-String
 InternalNodeData::styleClasses() const
 {
   return classes;
-}
-
-bool
-InternalNodeData::setVoice(const String &voice)
-{
-  if(element == VoiceNode) {
-    annotation = voice;
-    return true;
-  }
-  return NodeData::setVoice(voice);
 }
 
 bool
@@ -277,6 +271,50 @@ int
 InternalNodeData::childCount() const
 {
   return nodes.count();
+}
+
+VoiceNodeData::VoiceNodeData()
+  : InternalNodeData(InternalNode, VoiceNode)
+{
+}
+
+VoiceNodeData::~VoiceNodeData()
+{
+}
+
+String
+VoiceNodeData::voice() const
+{
+  return speaker;
+}
+
+bool
+VoiceNodeData::setVoice(const String &voice)
+{
+  speaker = voice;
+  return true;
+}
+
+LangNodeData::LangNodeData()
+  : InternalNodeData(InternalNode, LangNode)
+{
+}
+
+LangNodeData::~LangNodeData()
+{
+}
+
+String
+LangNodeData::lang() const
+{
+  return language;
+}
+
+bool
+LangNodeData::setLang(const String &lang)
+{
+  language = lang;
+  return true;
 }
 
 // Leaf node specializations

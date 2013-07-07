@@ -53,22 +53,60 @@ static bool isInternalNode(NodeElementType type)
   return false;
 }
 
-Node::Node(NodeType type, NodeElementType elementType)
-  : d(0)
+static NodeData *internalNodeData(NodeElementType type)
 {
-  if(type == InternalNode && isInternalNode(elementType))
-    d = new InternalNodeData(type, elementType);
-  else if(type == LeafNode) {
-    if(elementType == TextNode)
-      d = new TextNodeData();
-    else if(elementType == TimestampNode)
-      d = new TimestampNodeData();
+  if(isInternalNode(type)) {
+    if(type == VoiceNode)
+      return new VoiceNodeData();
+    if(type == LangNode)
+      return new LangNodeData();
+    else
+      return new InternalNodeData(InternalNode,type);
   }
+  return 0;
+}
 
-  if(!d) {
-    d = &emptyNode;
-    d->ref.ref();
-  }
+static NodeData *leafNodeData(NodeElementType type)
+{
+  if(type == TextNode)
+    return new TextNodeData();
+  if(type == TimestampNode)
+    return new TimestampNodeData();
+  return 0;
+}
+
+static NodeData *createNodeData(NodeType type, NodeElementType elem)
+{
+  NodeData *d = 0;
+  if(type == InternalNode && (d = internalNodeData(elem)))
+    return d;
+  if(type == LeafNode && (d = leafNodeData(elem)))
+    return d;
+  d = &emptyNode;
+  d->ref.ref();
+  return d; 
+}
+
+static NodeData *createNodeData(NodeElementType type)
+{
+  NodeData *d = 0;
+  if((d = internalNodeData(type)))
+    return d;
+  if((d = leafNodeData(type)))
+    return d;
+  d = &emptyNode;
+  d->ref.ref();
+  return d;
+}
+
+Node::Node(NodeType type, NodeElementType elementType)
+  : d(createNodeData(type,elementType))
+{
+}
+
+Node::Node(NodeElementType type)
+  : d(createNodeData(type))
+{ 
 }
 
 Node::Node(const Node &other)
@@ -124,6 +162,12 @@ Node::text() const
 }
 
 String
+Node::lang() const
+{
+  return d->lang();
+}
+
+String
 Node::styleClasses() const
 {
   return d->styleClasses();
@@ -145,6 +189,12 @@ bool
 Node::setText(const String &text)
 {
   return d->setText(text);
+}
+
+bool
+Node::setLang(const String &lang)
+{
+  return d->setLang(lang);
 }
 
 bool
