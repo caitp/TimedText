@@ -51,10 +51,22 @@ enum NodeElementType
   FirstNodeElementType = NullNode,
 
   // WebVTT internal nodes
+  ClassNode,
   BoldNode,
   ItalicNode,
   UnderlineNode,
   VoiceNode,
+
+  // WebVTT Ruby:
+  // May contain sequence of TextNodes and RubyTextNodes
+  // The RubyText node is the ruby annotation for the base
+  // text (the preceding InternalTextNode)
+  RubyNode,
+  RubyTextNode,
+
+  // WebVTT Language object:
+  // Changes the language of a given text span.
+  LangNode,
 
   // WebVTT leaf nodes
   TextNode,
