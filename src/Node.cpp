@@ -247,6 +247,12 @@ Node::take(int i, Node &result)
   return d->take(i, result);
 }
 
+bool
+Node::itemAt(int i, Node &result)
+{
+  return d->itemAt(i, result);
+}
+
 Node::iterator
 Node::begin()
 {

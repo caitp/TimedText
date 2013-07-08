@@ -60,6 +60,7 @@ public:
   virtual bool shift(Node &result);
   virtual bool insert(int i, const Node &node);
   virtual bool take(int i, Node &result);
+  virtual bool itemAt(int i, Node &result);
   virtual iterator begin();
   virtual iterator end();
   virtual const_iterator begin() const;
@@ -85,6 +86,7 @@ public:
   bool shift(Node &result);
   bool insert(int i, const Node &node);
   bool take(int i, Node &result);
+  bool itemAt(int i, Node &result);
   iterator begin();
   iterator end();
   const_iterator begin() const;

@@ -145,6 +145,12 @@ NodeData::take(int i, Node &result)
   return false;
 }
 
+bool
+NodeData::itemAt(int i, Node &result)
+{
+  return false;
+}
+
 NodeData::iterator
 NodeData::begin()
 {
@@ -226,6 +232,12 @@ bool
 InternalNodeData::take(int i, Node &result)
 {
   return nodes.take(i, result);
+}
+
+bool
+InternalNodeData::itemAt(int i, Node &result)
+{
+  return nodes.itemAt(i, result);
 }
 
 NodeData::iterator

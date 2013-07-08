@@ -53,6 +53,7 @@ WebVTTToken::~WebVTTToken()
 void
 WebVTTToken::reset()
 {
+  _type = Uninitialized;
   _data.clear();
   _annotation.clear();
   _classes.clear();
@@ -224,9 +225,8 @@ WebVTTTokenizer::next(const String &input, int &position, WebVTTToken &result)
       } else if(Char::isAsciiAlphanumeric(c)) {
         // Append buffer to result, append c to result, set tokenizer state to
         // the WebVTT data state, and jump to the step labeled next.
-        bufferText();
-        bufferText(c);
-        ADVANCE_TO(DataState);
+        buffer.append(c);
+        ADVANCE_TO(EscapeState);
       }
     END_STATE()
 
@@ -341,7 +341,7 @@ WebVTTTokenizer::isValidCharEntity(const char *entity, uint32 &out)
     { "&gt", '>' },
     { "&lrm", 0x200E },
     { "&rlm", 0x200F },
-    { "&nbsp", 0x003B },
+    { "&nbsp", 0x00A0 },
   };
   const int num = int(sizeof(ents) / sizeof(*ents));
   for(int i=0; i<num; ++i) {

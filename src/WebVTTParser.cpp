@@ -439,6 +439,9 @@ WebVTTParser::cuetextToNodes(const String &cuetext, Node &result)
         //   1. Create a WebVTT Text Object whose value is the value of the
         //      string token token.
         Node newTextNode(TextNode);
+        String text;
+        token.data(text);
+        newTextNode.setText(text);
         //   2. Append the newly created WebVTT Text Object to current
         current.push(newTextNode);
       } else if(token.type() == WebVTTToken::StartTag) {
@@ -554,7 +557,7 @@ WebVTTParser::cuetextToNodes(const String &cuetext, Node &result)
     }
   }
 
-  return false;
+  return true;
 }
 
 } // TimedText

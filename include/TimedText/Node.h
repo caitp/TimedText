@@ -159,6 +159,7 @@ public:
   bool shift(Node &result);
   bool insert(int i, const Node &node);
   bool take(int i, Node &result);
+  bool itemAt(int i, Node &result);
   int childCount() const;
 
   // Iterators over child nodes
