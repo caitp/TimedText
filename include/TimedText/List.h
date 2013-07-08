@@ -405,6 +405,16 @@ public:
       erase(--end());
   }
 
+  // Return the last item without removing it.
+  inline bool lastItem(T &result) {
+    return itemAt(length()-1, result);
+  }
+
+  // Return the first item without removing it.
+  inline bool firstItem(T &result) {
+    return itemAt(0, result);
+  }
+
 private:
   union { ListData p; ListData::Data *d; };
 

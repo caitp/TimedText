@@ -360,4 +360,3 @@ TEST(WebVTTTokenizer,TextTag)
   testTokenizeText("Phnglui mglw nafh Cthulhu <ruby>R'lyeh wgah nagl <rt>fhtagn",
                    "Phnglui mglw nafh Cthulhu ");
 }
-

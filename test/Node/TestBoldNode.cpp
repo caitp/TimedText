@@ -60,11 +60,13 @@ TEST(BoldNode,GetLang)
   EXPECT_STREQ("", node.lang());
 }
 
-TEST(BoldNode,GetStyleClasses)
+TEST(BoldNode,GetApplicableClasses)
 {
-  Node node(InternalNode,BoldNode);
-  EXPECT_STREQ("", node.styleClasses());
+  Node node(BoldNode);
+  List<String> applicableClasses = node.applicableClasses();
+  EXPECT_EQ(0, applicableClasses.count());
 }
+
 
 TEST(BoldNode,SetText)
 {
@@ -104,12 +106,13 @@ TEST(BoldNode,SetTimestamp)
   EXPECT_EQ(MalformedTimestamp, node.timestamp());
 }
 
-TEST(BoldNode,SetStyleClasses)
+TEST(BoldNode,SetApplicableClasses)
 {
-  Node node(InternalNode,BoldNode);
-  EXPECT_TRUE(node.setStyleClasses(String()));
-  EXPECT_TRUE(node.setStyleClasses(String(0)));
-  EXPECT_TRUE(node.setStyleClasses(String("")));
-  EXPECT_TRUE(node.setStyleClasses(String("background-color: #fff; font-family: sans-serif")));
-  EXPECT_STREQ("background-color: #fff; font-family: sans-serif", node.styleClasses());
+  List<String> classes;
+  EXPECT_TRUE(classes.push(String("typeA")));
+  EXPECT_TRUE(classes.push(String("typeB")));
+  Node node(BoldNode);
+  EXPECT_TRUE(node.setApplicableClasses(classes));
+  List<String> applicableClasses = node.applicableClasses();
+  EXPECT_EQ(classes.count(), applicableClasses.count());
 }

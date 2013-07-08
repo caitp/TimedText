@@ -60,10 +60,11 @@ TEST(UnderlineNode,GetLang)
   EXPECT_STREQ("", node.lang());
 }
 
-TEST(UnderlineNode,GetStyleClasses)
+TEST(UnderlineNode,GetApplicableClasses)
 {
-  Node node(InternalNode,UnderlineNode);
-  EXPECT_STREQ("", node.styleClasses());
+  Node node(UnderlineNode);
+  List<String> applicableClasses = node.applicableClasses();
+  EXPECT_EQ(0, applicableClasses.count());
 }
 
 TEST(UnderlineNode,SetText)
@@ -104,12 +105,13 @@ TEST(UnderlineNode,SetLang)
   EXPECT_STREQ("", node.lang());
 }
 
-TEST(UnderlineNode,SetStyleClasses)
+TEST(UnderlineNode,SetApplicableClasses)
 {
-  Node node(InternalNode,UnderlineNode);
-  EXPECT_TRUE(node.setStyleClasses(String()));
-  EXPECT_TRUE(node.setStyleClasses(String(0)));
-  EXPECT_TRUE(node.setStyleClasses(String("")));
-  EXPECT_TRUE(node.setStyleClasses(String("background-color: #fff; font-family: sans-serif")));
-  EXPECT_STREQ("background-color: #fff; font-family: sans-serif", node.styleClasses());
+  List<String> classes;
+  EXPECT_TRUE(classes.push(String("typeA")));
+  EXPECT_TRUE(classes.push(String("typeB")));
+  Node node(UnderlineNode);
+  EXPECT_TRUE(node.setApplicableClasses(classes));
+  List<String> applicableClasses = node.applicableClasses();
+  EXPECT_EQ(classes.count(), applicableClasses.count());
 }

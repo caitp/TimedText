@@ -66,10 +66,10 @@ NodeData::lang() const
   return String();
 }
 
-String
-NodeData::styleClasses() const
+List<String>
+NodeData::applicableClasses() const
 {
-  return String();
+  return List<String>();
 }
 
 bool
@@ -97,7 +97,7 @@ NodeData::setLang(const String &lang)
 }
 
 bool
-NodeData::setStyleClasses(const String &ts)
+NodeData::setApplicableClasses(const List<String> &style)
 {
   return false;
 }
@@ -177,28 +177,13 @@ NodeData::childCount() const
 
 // InternalNode specialization
 
-InternalNodeData::InternalNodeData(NodeType type, NodeElementType elem)
-  : NodeData(type, elem)
+InternalNodeData::InternalNodeData(NodeElementType elem)
+  : NodeData(InternalNode, elem)
 {
 }
 
 InternalNodeData::~InternalNodeData()
 {
-}
-
-String
-InternalNodeData::styleClasses() const
-{
-  return classes;
-}
-
-bool
-InternalNodeData::setStyleClasses(const String &styles)
-{
-  // TODO:
-  // Normalize classes (separate class names by single U+0020 space)
-  classes = styles;
-  return true;
 }
 
 const List<Node> &
@@ -267,14 +252,38 @@ InternalNodeData::end() const
   return nodes.end();
 }
 
+ElementNodeData::ElementNodeData(NodeElementType type)
+  : InternalNodeData(type)
+{
+}
+
+ElementNodeData::~ElementNodeData()
+{
+}
+
 int
 InternalNodeData::childCount() const
 {
   return nodes.count();
 }
 
+List<String>
+ElementNodeData::applicableClasses() const
+{
+  return _applicableClasses;
+}
+
+bool
+ElementNodeData::setApplicableClasses(const List<String> &styles)
+{
+  // TODO:
+  // Normalize classes (separate class names by single U+0020 space)
+  _applicableClasses = styles;
+  return true;
+}
+
 VoiceNodeData::VoiceNodeData()
-  : InternalNodeData(InternalNode, VoiceNode)
+  : ElementNodeData(VoiceNode)
 {
 }
 
@@ -296,7 +305,7 @@ VoiceNodeData::setVoice(const String &voice)
 }
 
 LangNodeData::LangNodeData()
-  : InternalNodeData(InternalNode, LangNode)
+  : ElementNodeData(LangNode)
 {
 }
 

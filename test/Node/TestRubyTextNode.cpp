@@ -60,10 +60,11 @@ TEST(RubyTextNode,GetLang)
   EXPECT_STREQ("", node.lang());
 }
 
-TEST(RubyTextNode,GetStyleClasses)
+TEST(RubyTextNode,GetApplicableClasses)
 {
-  Node node(InternalNode,RubyTextNode);
-  EXPECT_STREQ("", node.styleClasses());
+  Node node(RubyTextNode);
+  List<String> applicableClasses = node.applicableClasses();
+  EXPECT_EQ(0, applicableClasses.count());
 }
 
 TEST(RubyTextNode,SetText)
@@ -104,12 +105,13 @@ TEST(RubyTextNode,SetLang)
   EXPECT_STREQ("", node.lang());
 }
 
-TEST(RubyTextNode,SetStyleClasses)
+TEST(RubyTextNode,SetApplicableClasses)
 {
-  Node node(InternalNode,RubyTextNode);
-  EXPECT_TRUE(node.setStyleClasses(String()));
-  EXPECT_TRUE(node.setStyleClasses(String(0)));
-  EXPECT_TRUE(node.setStyleClasses(String("")));
-  EXPECT_TRUE(node.setStyleClasses(String("background-color: #fff; font-family: sans-serif")));
-  EXPECT_STREQ("background-color: #fff; font-family: sans-serif", node.styleClasses());
+  List<String> classes;
+  EXPECT_TRUE(classes.push(String("typeA")));
+  EXPECT_TRUE(classes.push(String("typeB")));
+  Node node(RubyTextNode);
+  EXPECT_TRUE(node.setApplicableClasses(classes));
+  List<String> applicableClasses = node.applicableClasses();
+  EXPECT_EQ(classes.count(), applicableClasses.count());
 }

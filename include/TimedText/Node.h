@@ -50,6 +50,12 @@ enum NodeElementType
   NullNode = 0,
   FirstNodeElementType = NullNode,
 
+  // InternalTextNode:
+  // The root of a tree of other nodes. It behaves simply as
+  // a list of other nodes, and should not be treated as a
+  // block or inline element in and of itself.
+  InternalTextNode,
+
   // WebVTT internal nodes
   ClassNode,
   BoldNode,
@@ -123,12 +129,12 @@ public:
   // BCP47 Language Code if elementType == LangNode
   String lang() const;
 
-  // space-separated CSS classes, for internal nodes -- else null String
+  // List of CSS classes, for internal nodes
   // TTML does not support the 'class' attribute in its model for any
   // internal nodes, and so styleClasses() for TTML nodes will always
   // return the null String. In the case of TTML nodes, refer to the 'style'
   // attribute instead.
-  String styleClasses() const;
+  List<String> applicableClasses() const;
 
   // Will fail for non-TimestampNodes
   bool setTimestamp(const Timestamp &ts);
@@ -139,7 +145,7 @@ public:
   // Will fail for non LangNodes
   bool setLang(const String &text);
   // Will fail for non-InternalNodes
-  bool setStyleClasses(const String &style);
+  bool setApplicableClasses(const List<String> &classes);
 
   // Return copy of node list -- always empty in the
   // case of leaf nodes.

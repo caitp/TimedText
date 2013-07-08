@@ -60,10 +60,11 @@ TEST(TimestampNode,GetLang)
   EXPECT_STREQ("", node.lang());
 }
 
-TEST(TimestampNode,GetStyleClasses)
+TEST(TimestampNode,GetApplicableClasses)
 {
-  Node node(LeafNode,TimestampNode);
-  EXPECT_STREQ("", node.styleClasses());
+  Node node(TimestampNode);
+  List<String> applicableClasses = node.applicableClasses();
+  EXPECT_EQ(0, applicableClasses.count());
 }
 
 TEST(TimestampNode,SetText)
@@ -104,12 +105,13 @@ TEST(TimestampNode,SetLang)
   EXPECT_STREQ("", node.lang());
 }
 
-TEST(TimestampNode,SetStyleClasses)
+TEST(TimestampNode,SetApplicableClasses)
 {
+  List<String> classes;
+  EXPECT_TRUE(classes.push(String("typeA")));
+  EXPECT_TRUE(classes.push(String("typeB")));
   Node node(LeafNode,TimestampNode);
-  EXPECT_FALSE(node.setStyleClasses(String()));
-  EXPECT_FALSE(node.setStyleClasses(String(0)));
-  EXPECT_FALSE(node.setStyleClasses(String("")));
-  EXPECT_FALSE(node.setStyleClasses(String("background-color: #fff; font-family: sans-serif")));
-  EXPECT_STREQ("", node.styleClasses());
+  EXPECT_FALSE(node.setApplicableClasses(classes));
+  List<String> applicableClasses = node.applicableClasses();
+  EXPECT_EQ(0, applicableClasses.count());
 }

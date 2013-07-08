@@ -56,12 +56,14 @@ static bool isInternalNode(NodeElementType type)
 static NodeData *internalNodeData(NodeElementType type)
 {
   if(isInternalNode(type)) {
+    if(type == InternalTextNode)
+      return new InternalNodeData(InternalTextNode);
     if(type == VoiceNode)
       return new VoiceNodeData();
     if(type == LangNode)
       return new LangNodeData();
     else
-      return new InternalNodeData(InternalNode,type);
+      return new ElementNodeData(type);
   }
   return 0;
 }
@@ -167,10 +169,10 @@ Node::lang() const
   return d->lang();
 }
 
-String
-Node::styleClasses() const
+List<String>
+Node::applicableClasses() const
 {
-  return d->styleClasses();
+  return d->applicableClasses();
 }
 
 bool
@@ -198,9 +200,9 @@ Node::setLang(const String &lang)
 }
 
 bool
-Node::setStyleClasses(const String &style)
+Node::setApplicableClasses(const List<String> &classes)
 {
-  return d->setStyleClasses(style);
+  return d->setApplicableClasses(classes);
 }
 
 const List<Node> &

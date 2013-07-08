@@ -60,10 +60,11 @@ TEST(LangNode,GetLang)
   EXPECT_STREQ("", node.lang());
 }
 
-TEST(LangNode,GetStyleClasses)
+TEST(LangNode,GetApplicableClasses)
 {
-  Node node(InternalNode,LangNode);
-  EXPECT_STREQ("", node.styleClasses());
+  Node node(LangNode);
+  List<String> applicableClasses = node.applicableClasses();
+  EXPECT_EQ(0, applicableClasses.count());
 }
 
 TEST(LangNode,SetText)
@@ -104,12 +105,13 @@ TEST(LangNode,SetLang)
   EXPECT_STREQ("Meow", node.lang());
 }
 
-TEST(LangNode,SetStyleClasses)
+TEST(LangNode,SetApplicableClasses)
 {
-  Node node(InternalNode,LangNode);
-  EXPECT_TRUE(node.setStyleClasses(String()));
-  EXPECT_TRUE(node.setStyleClasses(String(0)));
-  EXPECT_TRUE(node.setStyleClasses(String("")));
-  EXPECT_TRUE(node.setStyleClasses(String("background-color: #fff; font-family: sans-serif")));
-  EXPECT_STREQ("background-color: #fff; font-family: sans-serif", node.styleClasses());
+  List<String> classes;
+  EXPECT_TRUE(classes.push(String("typeA")));
+  EXPECT_TRUE(classes.push(String("typeB")));
+  Node node(LangNode);
+  EXPECT_TRUE(node.setApplicableClasses(classes));
+  List<String> applicableClasses = node.applicableClasses();
+  EXPECT_EQ(classes.count(), applicableClasses.count());
 }

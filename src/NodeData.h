@@ -47,12 +47,12 @@ public:
   virtual String voice() const;
   virtual String text() const;
   virtual String lang() const;
-  virtual String styleClasses() const;
+  virtual List<String> applicableClasses() const;
   virtual bool setTimestamp(const Timestamp &ts);
   virtual bool setVoice(const String &ts);
   virtual bool setText(const String &ts);
   virtual bool setLang(const String &lang);
-  virtual bool setStyleClasses(const String &ts);
+  virtual bool setApplicableClasses(const List<String> &applicableClasses);
   virtual const List<Node> &children() const;
   virtual bool push(const Node &node);
   virtual bool pop(Node &result);
@@ -75,11 +75,9 @@ public:
 class InternalNodeData : public NodeData
 {
 public:
-  InternalNodeData(NodeType type, NodeElementType elem);
+  InternalNodeData(NodeElementType elem);
   virtual ~InternalNodeData();
 
-  String styleClasses() const;
-  bool setStyleClasses(const String &ts);
   const List<Node> &children() const;
   bool push(const Node &node);
   bool pop(Node &result);
@@ -93,11 +91,20 @@ public:
   const_iterator end() const;
   int childCount() const;
 
-  String classes;
   List<Node> nodes;
 };
 
-class VoiceNodeData : public InternalNodeData
+class ElementNodeData : public InternalNodeData
+{
+public:
+  ElementNodeData(NodeElementType type);
+  virtual ~ElementNodeData();
+  List<String> applicableClasses() const;
+  bool setApplicableClasses(const List<String> &style);
+  List<String> _applicableClasses;
+};
+
+class VoiceNodeData : public ElementNodeData
 {
 public:
   VoiceNodeData();
@@ -109,7 +116,7 @@ public:
   String speaker;
 };
 
-class LangNodeData : public InternalNodeData
+class LangNodeData : public ElementNodeData
 {
 public:
   LangNodeData();

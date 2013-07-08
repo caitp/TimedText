@@ -60,10 +60,11 @@ TEST(VoiceNode,GetLang)
   EXPECT_STREQ("", node.lang());
 }
 
-TEST(VoiceNode,GetStyleClasses)
+TEST(VoiceNode,GetApplicableClasses)
 {
-  Node node(InternalNode,VoiceNode);
-  EXPECT_STREQ("", node.styleClasses());
+  Node node(VoiceNode);
+  List<String> applicableClasses = node.applicableClasses();
+  EXPECT_EQ(0, applicableClasses.count());
 }
 
 TEST(VoiceNode,SetText)
@@ -104,12 +105,13 @@ TEST(VoiceNode,SetLang)
   EXPECT_STREQ("", node.lang());
 }
 
-TEST(VoiceNode,SetStyleClasses)
+TEST(VoiceNode,SetApplicableClasses)
 {
-  Node node(InternalNode,VoiceNode);
-  EXPECT_TRUE(node.setStyleClasses(String()));
-  EXPECT_TRUE(node.setStyleClasses(String(0)));
-  EXPECT_TRUE(node.setStyleClasses(String("")));
-  EXPECT_TRUE(node.setStyleClasses(String("background-color: #fff; font-family: sans-serif")));
-  EXPECT_STREQ("background-color: #fff; font-family: sans-serif", node.styleClasses());
+  List<String> classes;
+  EXPECT_TRUE(classes.push(String("typeA")));
+  EXPECT_TRUE(classes.push(String("typeB")));
+  Node node(VoiceNode);
+  EXPECT_TRUE(node.setApplicableClasses(classes));
+  List<String> applicableClasses = node.applicableClasses();
+  EXPECT_EQ(classes.count(), applicableClasses.count());
 }
