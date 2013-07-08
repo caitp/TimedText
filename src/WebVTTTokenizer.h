@@ -97,6 +97,7 @@ public:
   void beginEmptyStartTag();
   void beginStartTag(char c);
   void beginTimestampTag(char c);
+  void beginEndTag();
   
 private:
   Type _type;

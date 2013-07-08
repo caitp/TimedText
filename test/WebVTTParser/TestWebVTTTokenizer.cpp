@@ -43,7 +43,7 @@ void testTokenizeStartTag(const char *text,
   String token(text,-1);
   EXPECT_TRUE(tokenizer.next(token, position, result))
     << "testTokenizeStartTag #" << run;
-  EXPECT_EQ(result.type(), WebVTTToken::StartTag)
+  EXPECT_EQ(WebVTTToken::StartTag, result.type())
     << "testTokenizeStartTag #" << run;
   String name;
   EXPECT_TRUE(result.data(name)) << "testTokenizeStartTag #" << run;
@@ -69,7 +69,7 @@ void testTokenizeStartTag(const char *text,
   String token(text);
   EXPECT_TRUE(tokenizer.next(token, position, result))
     << "testTokenizeStartTag #" << run;
-  EXPECT_EQ(result.type(), WebVTTToken::StartTag)
+  EXPECT_EQ(WebVTTToken::StartTag, result.type())
     << "testTokenizeStartTag #" << run;
   String name;
   EXPECT_TRUE(result.data(name)) << "testTokenizeStartTag #" << run;
@@ -93,6 +93,8 @@ TEST(WebVTTTokenizer,StartTag)
   testTokenizeStartTag("<i>", "i", "");
   testTokenizeStartTag("<u>", "u", "");
   testTokenizeStartTag("<v>", "v", "");
+  testTokenizeStartTag("<lang>", "lang", "");
+  testTokenizeStartTag("<ruby>", "ruby", "");
 }
 
 // Test a start tag with simple annotation (no spaces)
@@ -103,12 +105,18 @@ TEST(WebVTTTokenizer,StartTagWithAnnotation)
   testTokenizeStartTag("<i  withAnnotation   >", "i", "withAnnotation");
   testTokenizeStartTag("<u     withAnnotation >", "u", "withAnnotation");
   testTokenizeStartTag("<v  \twithAnnotation\f  >", "v", "withAnnotation");
+  testTokenizeStartTag("<lang\n\ten-US\r\f>", "lang", "en-US");
+  testTokenizeStartTag("<ruby\n\twithAnnotation\r\f>", "ruby", "withAnnotation");
+  testTokenizeStartTag("<rt\n\twithAnnotation\r\f>", "rt", "withAnnotation");
   // Test a start tag with multi-word annotation
   testTokenizeStartTag("<c \n\r  with annotation   >", "c", "with annotation");
   testTokenizeStartTag("<b    with annotation   >", "b", "with annotation");
   testTokenizeStartTag("<i  \f\f  with annotation\t\t\n  >", "i", "with annotation");
   testTokenizeStartTag("<u\t\fwith annotation\r\n>", "u", "with annotation");
   testTokenizeStartTag("<v\n\twith annotation\r\f>", "v", "with annotation");
+  testTokenizeStartTag("<lang\n\ten US\r\f>", "lang", "en US");
+  testTokenizeStartTag("<ruby\n\twith annotation\r\f>", "ruby", "with annotation");
+  testTokenizeStartTag("<rt\n\twith annotation\r\f>", "rt", "with annotation");
 }
 
 // Test a start tag with an annotation which begins with a period
@@ -131,6 +139,9 @@ TEST(WebVTTTokenizer,StartTagWithClass)
   testTokenizeStartTag("<i.meow>", "i", "", oneClass);
   testTokenizeStartTag("<u.meow>", "u", "", oneClass);
   testTokenizeStartTag("<v.meow>", "v", "", oneClass);
+  testTokenizeStartTag("<lang.meow>", "lang", "", oneClass);
+  testTokenizeStartTag("<ruby.meow>", "ruby", "", oneClass);
+  testTokenizeStartTag("<rt.meow>", "rt", "", oneClass);
 }
 
 // Test a start tag with single class and annotation
@@ -142,6 +153,9 @@ TEST(WebVTTTokenizer,StartTagWithClassAndAnnotation)
   testTokenizeStartTag("<i.meow   gerbilgarb>", "i", "gerbilgarb", oneClass);
   testTokenizeStartTag("<u.meow gerbilgarb >", "u", "gerbilgarb", oneClass);
   testTokenizeStartTag("<v.meow  gerbilgarb  >", "v", "gerbilgarb", oneClass);
+  testTokenizeStartTag("<lang.meow en-US>", "lang", "en-US", oneClass);
+  testTokenizeStartTag("<ruby.meow derp>", "ruby", "derp", oneClass);
+  testTokenizeStartTag("<rt.meow blargh>", "rt", "blargh", oneClass);
 }
 
 // Test a start tag with multiple classes and no annotation
@@ -153,6 +167,10 @@ TEST(WebVTTTokenizer,StartTagWithClasses)
   testTokenizeStartTag("<i.foo.bar.baz>", "i", "", triClass);
   testTokenizeStartTag("<u.foo.bar.baz>", "u", "", triClass);
   testTokenizeStartTag("<v.foo.bar.baz>", "v", "", triClass);
+  testTokenizeStartTag("<lang.foo.bar.baz>", "lang", "", triClass);
+  testTokenizeStartTag("<ruby.foo.bar.baz>", "ruby", "", triClass);
+  testTokenizeStartTag("<rt.foo.bar.baz>", "rt", "", triClass);
+
 }
 
 // Test a start tag with multiple classes and annotation
@@ -164,6 +182,23 @@ TEST(WebVTTTokenizer,StartTagWithClassesAndAnnotation)
   testTokenizeStartTag("<i.foo.bar.baz derp >", "i", "derp", triClass);
   testTokenizeStartTag("<u.foo.bar.baz der p >", "u", "der p", triClass);
   testTokenizeStartTag("<v.foo.bar.baz derka>", "v", "derka", triClass);
+  testTokenizeStartTag("<lang.foo.bar.baz en-US>", "lang", "en-US", triClass);
+  testTokenizeStartTag("<ruby.foo.bar.baz spoony bool>", "ruby", "spoony bool", triClass);
+  testTokenizeStartTag("<rt.foo.bar.baz tatotop>", "rt", "tatotop", triClass);
+}
+
+// Test a nameless start tag with single class
+TEST(WebVTTTokenizer,NamelessStartTagWithAnnotation)
+{
+  testTokenizeStartTag("<\r\nwithAnnotation\r\n>", "", "withAnnotation");
+  testTokenizeStartTag("<\nwithAnnotation\f\t>", "", "withAnnotation");
+  testTokenizeStartTag("<\rwithAnnotation  >", "", "withAnnotation");
+  testTokenizeStartTag("< with annotation\r\n>", "", "with annotation");
+  testTokenizeStartTag("<\twith annotation\f\t>", "", "with annotation");
+  testTokenizeStartTag("<\fwith annotation  >", "", "with annotation");
+  testTokenizeStartTag("<\f\f.meow\r\n>", "", ".meow");
+  testTokenizeStartTag("<\t.meow\f\t>", "", ".meow");
+  testTokenizeStartTag("< \t.meow  >", "", ".meow");
 }
 
 // Test a nameless start tag with single class
@@ -207,24 +242,21 @@ TEST(WebVTTTokenizer,NamelessStartTagWithClassesAndAnnotation)
 }
 
 void testTokenizeTimestampTag(const char *text,
-                             const Milliseconds &expectedTimestamp)
+                              Milliseconds expectedTimestamp)
 {
-  bool expectTimestamp = true;
   static int run = 1;
-  if(expectedTimestamp < 0) {
-    expectTimestamp = false;
-    expectTimestamp = MalformedTimestamp;
-  }
+  if(expectedTimestamp < 0)
+    expectedTimestamp = MalformedTimestamp;
   WebVTTToken result;
   WebVTTTokenizer tokenizer;
   int position = 0;
   String token(text,-1);
   EXPECT_TRUE(tokenizer.next(token, position, result))
     << "testTokenizeTimestampTag #" << run;
-  EXPECT_EQ(result.type(), WebVTTToken::TimestampTag)
+  EXPECT_EQ(WebVTTToken::TimestampTag, result.type())
     << "testTokenizeTimestampTag #" << run;
   Timestamp ts = result.timestamp();
-  EXPECT_EQ(expectedTimestamp, ts) << "testTokenizeStartTag #" << run;
+  EXPECT_EQ(expectedTimestamp, ts) << "testTokenizeTimestampTag #" << run;
   EXPECT_STREQ("", result.annotation())
     << "testTokenizeTimestampTag #" << run;
   List<String> classes = result.classes();
@@ -258,3 +290,74 @@ TEST(WebVTTTokenizer,TimestampTag)
   testTokenizeTimestampTag("<00:59:59.999>", 3599999);
   testTokenizeTimestampTag("<59:59.999>", 3599999);
 }
+
+void testTokenizeEndTag(const char *text,
+                        const char *expectedName)
+{
+  static int run = 1;
+  WebVTTToken result;
+  WebVTTTokenizer tokenizer;
+  int position = 0;
+  String token(text,-1);
+  EXPECT_TRUE(tokenizer.next(token, position, result))
+    << "testTokenizeEndTag #" << run;
+  EXPECT_EQ(WebVTTToken::EndTag, result.type())
+    << "testTokenizeEndTag #" << run;
+  String name;
+  EXPECT_TRUE(result.data(name)) << "testTokenizeEndTag #" << run;
+  EXPECT_STREQ(expectedName, name) << "testTokenizeEndTag #" << run;
+  EXPECT_STREQ("", result.annotation())
+    << "testTokenizeEndTag #" << run;
+  List<String> classes = result.classes();
+  EXPECT_EQ(0, classes.count())
+    << "testTokenizeEndTag #" << run;
+  ++run;
+}
+
+// EndTag Tests
+TEST(WebVTTTokenizer,EndTag)
+{
+  testTokenizeEndTag("</c>","c");
+  testTokenizeEndTag("</b>","b");
+  testTokenizeEndTag("</i>","i");
+  testTokenizeEndTag("</u>","u");
+  testTokenizeEndTag("</v>","v");
+  testTokenizeEndTag("</lang>","lang");
+  testTokenizeEndTag("</ruby>","ruby");
+  testTokenizeEndTag("</rt>","rt");
+}
+
+void testTokenizeText(const char *text,
+                      const char *expectedText)
+{
+  static int run = 1;
+  WebVTTToken result;
+  WebVTTTokenizer tokenizer;
+  int position = 0;
+  String token(text,-1);
+  EXPECT_TRUE(tokenizer.next(token, position, result))
+    << "testTokenizeText #" << run;
+  EXPECT_EQ(WebVTTToken::Text, result.type())
+    << "testTokenizeText #" << run;
+  String data;
+  EXPECT_TRUE(result.data(data));
+  EXPECT_STREQ(expectedText, data) << "testTokenizeText #" << run;
+  EXPECT_STREQ("", result.annotation())
+    << "testTokenizeText #" << run;
+  List<String> classes = result.classes();
+  EXPECT_EQ(0, classes.count())
+    << "testTokenizeText #" << run;
+  ++run;
+}
+
+// Text Tests
+TEST(WebVTTTokenizer,TextTag)
+{
+  testTokenizeText("\r\n<lang en-US>","\n");
+  testTokenizeText("derpington jr.</b>","derpington jr.");
+  testTokenizeText("Phnglui mglw nafh Cthulhu R'lyeh wgah nagl fhtagn",
+                   "Phnglui mglw nafh Cthulhu R'lyeh wgah nagl fhtagn");
+  testTokenizeText("Phnglui mglw nafh Cthulhu <ruby>R'lyeh wgah nagl <rt>fhtagn",
+                   "Phnglui mglw nafh Cthulhu ");
+}
+

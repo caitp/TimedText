@@ -115,6 +115,13 @@ WebVTTToken::beginTimestampTag(char c)
   _data.append(c);
 }
 
+void
+WebVTTToken::beginEndTag()
+{
+  assert(_type == Uninitialized);
+  _type = EndTag;
+}
+
 static const uint32 endOfFileMark = uint32(-1);
 
 // Tokenizer
@@ -230,9 +237,10 @@ WebVTTTokenizer::next(const String &input, int &position, WebVTTToken &result)
       } else if(c == '.') {
         token->beginEmptyStartTag();
         ADVANCE_TO(StartTagClassState);
-      } else if(c == '/')
+      } else if(c == '/') {
+        token->beginEndTag();
         ADVANCE_TO(EndTagState);
-      else if(Char::isAsciiDigit(c)) {
+      } else if(Char::isAsciiDigit(c)) {
         token->beginTimestampTag(c);
         ADVANCE_TO(TimestampTagState);
       } else if(c == '>' || c == endOfFileMark) {
