@@ -154,6 +154,12 @@ public:
     return true;
   }
 
+  // WARNING: This routine performs no bounds checking.
+  // Only call if absolutely certain that it's within bounds.
+  inline T &operator[](int i) {
+    return reinterpret_cast<Node *>(p.at(i))->get();
+  }
+
   // Insert into arbitrary position
   inline bool insert(int i, const T &item) {
     if(!p.unique()) {

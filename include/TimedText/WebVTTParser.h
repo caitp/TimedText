@@ -84,6 +84,9 @@ public:
   // expect the cues to be appended to it!
   void parsedCues(List<Cue> &result);
 
+  // Translate WebVTT CueText into a tree of Node objects
+  static bool cuetextToNodes(const String &cuetext, Node &tree);
+
 private:
   bool parseHeader();
   bool parseBOM();

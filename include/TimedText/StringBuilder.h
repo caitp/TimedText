@@ -77,6 +77,8 @@ public:
 
   char operator[](int i) const
   {
+    if(i < 0)
+      i += size();
     if(i < 0 || i >= size())
       return '\0';
     return d->text[i];
@@ -99,6 +101,10 @@ public:
       return append(arr, N-1);
     return append(arr, N);
   }
+  inline bool append(const StringBuilder &buf) {
+    return append(buf.text(), buf.length());
+  }
+
   bool prepend(unsigned long ucs4);
   bool prepend(const char *text, int len);
   inline bool prepend(const String &str) {
@@ -107,6 +113,9 @@ public:
   template <size_t N>
   inline bool prepend(const char (&arr)[N]) {
     return prepend(arr, N);
+  }
+  inline bool prepend(const StringBuilder &buf) {
+    return prepend(buf.text(), buf.length());
   }
   bool insert(int idx, unsigned long ucs4);
   bool insert(int idx, const char *text, int len);
@@ -117,6 +126,9 @@ public:
   inline bool insert(int idx, const char (&arr)[N]) {
     return insert(idx, arr, N);
   }
+  inline bool insert(int i, const StringBuilder &buf) {
+    return insert(i, buf.text(), buf.length());
+  }
   bool replaceAll(const char *search, int len,
                   const char *repl, int rlen);
   bool replaceAll(const char *search, int len,
@@ -125,6 +137,8 @@ public:
                   const char *replace, int rlen);
   bool replaceAll(unsigned long search,
                   unsigned long replace);
+
+  void removeTrailingChar();
 
 private:
   struct Data

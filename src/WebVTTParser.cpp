@@ -407,4 +407,22 @@ WebVTTParser::parsedCues(List<Cue> &result)
   currentCues.clear();
 }
 
+// Translate CueText into tree of Node objects
+bool
+WebVTTParser::cuetextToNodes(const String &cuetext, Node &result)
+{
+  // 1. Let input be the string being parsed.
+  // 2. Let position be a pointer into input, initially pointing at the start
+  //    of the string
+  // 3. Let result be a list of Node objects, initially empty.
+  // 4. Let current be the WebVTT Internal Node Object result
+  // 5. Let language stack be a stack of language codes, initially empty (NO)
+  String input = cuetext;
+  int position = 0;
+
+  // 6. Loop: if position is past the end of input, return result and abort
+  //    these steps
+  return false;
+}
+
 } // TimedText

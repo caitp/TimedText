@@ -28,6 +28,8 @@
 #ifndef __TimedText_Char__
 #define __TimedText_Char__
 
+#include <TimedText/Types.h>
+
 namespace TimedText
 {
 
@@ -40,19 +42,45 @@ class Char
 public:
   // Return true if 'c' is an HTML5 space character (U+0020, U+0009, U+000A,
   // U+000D, or U+000C)
-  static inline bool isHtml5Space(char c)
+  // HTML5 2.4.1
+  static inline bool isHtml5Space(uint32 c)
   {
     return c == ' ' || c == '\t' || c == '\n' || c == '\f' || c == '\r';
   }
 
   // Return true if 'c' is an ASCII digit (inclusively between '0' and '9')
-  static inline bool isAsciiDigit(char c)
+  // HTML5 2.4.1
+  static inline bool isAsciiDigit(uint32 c)
   {
     return (c >= '0' && c <= '9');
   }
 
+  // HTML5 2.4.1
+  static inline bool isAsciiLetter(uint32 c)
+  {
+    return isAsciiUppercase(c) || isAsciiLowercase(c);
+  }
+
+  // HTML5 2.4.1
+  static inline bool isAsciiUppercase(uint32 c)
+  {
+    return c >= 'A' && c <= 'Z';
+  }
+
+  // HTML5 2.4.1
+  static inline bool isAsciiLowercase(uint32 c)
+  {
+    return c >= 'a' && c <= 'z';
+  }
+
+  // HTML5 2.4.1
+  static inline bool isAsciiAlphanumeric(uint32 c)
+  {
+    return isAsciiLetter(c) || isAsciiDigit(c);
+  }
+
   // Return true if 'c' is an ASCII newline character
-  static inline bool isNewlineChar(char c)
+  static inline bool isNewlineChar(uint32 c)
   {
     return (c == '\r' || c == '\n');
   }
