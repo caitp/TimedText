@@ -119,8 +119,8 @@ static const uint32 endOfFileMark = uint32(-1);
 
 // Tokenizer
 WebVTTTokenizer::WebVTTTokenizer()
-  : _state(WebVTTTokenizerState::DataState),
-    token(0)
+  : token(0),
+    _state(WebVTTTokenizerState::DataState)
 {
 }
 

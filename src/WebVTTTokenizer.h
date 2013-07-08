@@ -28,7 +28,9 @@
 #ifndef __TimedText_WebVTTTokenizer__
 #define __TimedText_WebVTTTokenizer__
 
+#include <TimedText/WebVTTParser.h>
 #include <TimedText/StringBuilder.h>
+#include <TimedText/Timestamp.h>
 #include <TimedText/List.h>
 
 namespace TimedText
@@ -58,8 +60,19 @@ public:
     return _data.isEmpty() && _classes.isEmpty() && _annotation.isEmpty();
   }
   void reset();
-  bool data(String &result) {
+  bool data(String &result) const {
     return _data.toString(result);
+  }
+
+  Timestamp timestamp() const {
+    String string;
+    if(type() == TimestampTag && data(string)) {
+      int pos = 0;
+      Timestamp ts = WebVTTParser::collectTimestamp(string, pos);
+      if(pos == string.length())
+        return ts;
+    }
+    return MalformedTimestamp;
   }
 
   String annotation() const {

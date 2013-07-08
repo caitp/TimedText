@@ -191,7 +191,7 @@ WebVTTParser::collectTimingsAndSettings(const String &line)
   int position = 0;
   currentStartTime = currentEndTime = MalformedTimestamp;
   line.skipWhitespace(position);
-  currentStartTime = collectTimeStamp(line, position);
+  currentStartTime = collectTimestamp(line, position);
 
   if(currentStartTime.isMalformed())
     return BadCue;
@@ -206,7 +206,7 @@ WebVTTParser::collectTimingsAndSettings(const String &line)
   position += 3;
   line.skipWhitespace(position);
 
-  currentEndTime = collectTimeStamp(line, position);
+  currentEndTime = collectTimestamp(line, position);
 
   if(currentEndTime.isMalformed())
     return BadCue;
@@ -219,7 +219,7 @@ WebVTTParser::collectTimingsAndSettings(const String &line)
 }
 
 Timestamp
-WebVTTParser::collectTimeStamp(const String &line, int &position)
+WebVTTParser::collectTimestamp(const String &line, int &position)
 {
   enum Mode {
     Minutes,

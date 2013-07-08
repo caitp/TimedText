@@ -25,6 +25,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
+#include <TimedText/Timestamp.h>
 #include "WebVTTTokenizer.h"
 #include <gtest/gtest.h>
 using namespace TimedText;
@@ -205,8 +206,55 @@ TEST(WebVTTTokenizer,NamelessStartTagWithClassesAndAnnotation)
   testTokenizeStartTag("<.foo.bar.baz  gerbilgarb\f  >", "", "gerbilgarb", triClass);
 }
 
+void testTokenizeTimestampTag(const char *text,
+                             const Milliseconds &expectedTimestamp)
+{
+  bool expectTimestamp = true;
+  static int run = 1;
+  if(expectedTimestamp < 0) {
+    expectTimestamp = false;
+    expectTimestamp = MalformedTimestamp;
+  }
+  WebVTTToken result;
+  WebVTTTokenizer tokenizer;
+  int position = 0;
+  String token(text,-1);
+  EXPECT_TRUE(tokenizer.next(token, position, result))
+    << "testTokenizeTimestampTag #" << run;
+  EXPECT_EQ(result.type(), WebVTTToken::TimestampTag)
+    << "testTokenizeTimestampTag #" << run;
+  Timestamp ts = result.timestamp();
+  EXPECT_EQ(expectedTimestamp, ts) << "testTokenizeStartTag #" << run;
+  EXPECT_STREQ("", result.annotation())
+    << "testTokenizeTimestampTag #" << run;
+  List<String> classes = result.classes();
+  EXPECT_EQ(0, classes.count())
+    << "testTokenizeTimestampTag #" << run;
+  ++run;
+}
+
 // TimestampTag Tests
 TEST(WebVTTTokenizer,TimestampTag)
 {
-  
+  testTokenizeTimestampTag("<0:00:00.000>", 0);
+  testTokenizeTimestampTag("<00:00:00.000>", 0);
+  testTokenizeTimestampTag("<00:00.000>", 0);
+  testTokenizeTimestampTag("<0:0:00.000>", -1);
+  testTokenizeTimestampTag("<00:0:00.000>", -1);
+  testTokenizeTimestampTag("<0:00.000>", -1);
+  testTokenizeTimestampTag("<0:00:0.000>", -1);
+  testTokenizeTimestampTag("<00:00:0.000>", -1);
+  testTokenizeTimestampTag("<00:0.000>", -1);
+  testTokenizeTimestampTag("<0:00:00.00>", -1);
+  testTokenizeTimestampTag("<00:00:00.00>", -1);
+  testTokenizeTimestampTag("<00:00.00>", -1);
+  testTokenizeTimestampTag("<0:00:00.000 >", -1);
+  testTokenizeTimestampTag("<00:00:00.000 >", -1);
+  testTokenizeTimestampTag("<00:00.000\rfoo>", -1);
+  testTokenizeTimestampTag("<0:00:00.000\nfulp>", -1);
+  testTokenizeTimestampTag("<00:00:00.000\tgaga>", -1);
+  testTokenizeTimestampTag("<00:00.000\fgoogoo>", -1);
+  testTokenizeTimestampTag("<0:59:59.999>", 3599999);
+  testTokenizeTimestampTag("<00:59:59.999>", 3599999);
+  testTokenizeTimestampTag("<59:59.999>", 3599999);
 }
