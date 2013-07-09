@@ -134,3 +134,35 @@ TEST(WebVTTCueTextParser,MalformedTimestampTag)
   EXPECT_EQ(TextNode, child.element());
   EXPECT_STREQ("Invalid minute component.", child.text());
 }
+
+TEST(WebVTTCueTextParser,RubyBaseNestedMarkup)
+{
+  Node result;
+  Node child;
+  EXPECT_TRUE(parseCuetext(
+    "<ruby>\xec\x95\x88<b>\xeb\x85\x95</b><rt>Hello!</ruby>",
+    result));
+  EXPECT_EQ(InternalTextNode, result.element());
+  EXPECT_EQ(1, result.childCount());
+  EXPECT_TRUE(result.itemAt(0, child));
+    EXPECT_EQ(RubyNode, child.element());
+    EXPECT_EQ(3, child.childCount());
+    Node ruby = child;
+    EXPECT_TRUE(ruby.itemAt(0, child));
+      EXPECT_EQ(TextNode, child.element());
+      EXPECT_STREQ("\xec\x95\x88", child.text());
+    EXPECT_TRUE(ruby.itemAt(1, child));
+      EXPECT_EQ(BoldNode, child.element());
+      Node bold = child;
+      EXPECT_EQ(1, bold.childCount());
+      EXPECT_TRUE(bold.itemAt(0, child));
+        EXPECT_EQ(TextNode, child.element());
+        EXPECT_STREQ("\xeb\x85\x95", child.text());
+    EXPECT_TRUE(ruby.itemAt(2, child));
+      EXPECT_EQ(RubyTextNode, child.element());
+      EXPECT_EQ(1, child.childCount());
+      Node text;
+      EXPECT_TRUE(child.itemAt(0, text));
+        EXPECT_EQ(TextNode, text.element());
+        EXPECT_STREQ("Hello!", text.text());
+}

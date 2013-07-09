@@ -66,7 +66,7 @@ enum NodeElementType
   // WebVTT Ruby:
   // May contain sequence of TextNodes and RubyTextNodes
   // The RubyText node is the ruby annotation for the base
-  // text (the preceding InternalTextNode)
+  // text
   RubyNode,
   RubyTextNode,
 

@@ -84,6 +84,7 @@ public:
     return _classes;
   }
 
+  bool appendByte(char b);
   bool appendData(unsigned long ch);
   bool appendData(const StringBuilder &buf);
   bool appendClass(const String &styleClass);
@@ -137,6 +138,7 @@ public:
 
   // Return true if token contains buffered data and is a Text token
   bool haveBufferedTextToken();
+  bool bufferByte(char c);
   bool bufferText(unsigned long ch);
   bool bufferText();
   bool appendName(uint c);

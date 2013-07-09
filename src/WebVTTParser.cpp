@@ -553,7 +553,7 @@ WebVTTParser::cuetextToNodes(const String &cuetext, Node &result)
       }
 
       // Reset the tokenizer...
-      tokenizer.reset();
+      token.reset();
     }
   }
 
