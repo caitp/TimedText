@@ -36,6 +36,9 @@ notice, this list of conditions and the following disclaimer in the
 documentation and/or other materials provided with the distribution.
  * Mozilla Foundation and subsidiaries are entirely forbidden from
 using this software.
+ * The Centre for Development of Open Technology (CDOT) is entirely
+ forbidden from using, forking, or claiming ownership of this
+ material.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
