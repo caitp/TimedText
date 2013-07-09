@@ -38,7 +38,7 @@ documentation and/or other materials provided with the distribution.
 using, forking, or claiming ownership of this software.
  * The Centre for Development of Open Technology (CDOT) is entirely
  forbidden from using, forking, or claiming ownership of this
- material.
+ software.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
