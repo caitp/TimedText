@@ -67,12 +67,6 @@ WebVTTToken::ensureIsText()
 }
 
 bool
-WebVTTToken::appendByte(char b)
-{
-  return _data.appendByte(b);
-}
-
-bool
 WebVTTToken::appendData(unsigned long ch)
 {
   return _data.append(ch);
@@ -155,14 +149,13 @@ WebVTTTokenizer::nextChar(const String &input, int &position)
 {
   if(position < 0 || position >= input.length())
     return endOfFileMark;
-  uint32 c = input[position++];
-  if(c == '\r') {
-    // Convert CR and CRLF to LF
-    if(position < input.length() && input[position] == '\n')
+  uint32 c = Unicode::utf8ToUCS4(input.text(), input.length(), position);
+  if( c == '\r' ) {
+    if(input[position] == '\n')
       ++position;
     c = '\n';
   }
-  return c & 0x000000FF;
+  return c;
 }
 
 bool
@@ -199,7 +192,7 @@ WebVTTTokenizer::next(const String &input, int &position, WebVTTToken &result)
       } else if(c == endOfFileMark)
         return emitEndOfFile();
       else {
-        bufferByte(c);
+        bufferText(c);
         ADVANCE_TO(DataState);
       }
     END_STATE()
@@ -360,13 +353,6 @@ WebVTTTokenizer::isValidCharEntity(const char *entity, uint32 &out)
     }
   }
   return false;
-}
-
-bool
-WebVTTTokenizer::bufferByte(char c)
-{
-  token->ensureIsText();
-  return token->appendByte(c);
 }
 
 bool

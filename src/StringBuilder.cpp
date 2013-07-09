@@ -128,18 +128,6 @@ StringBuilder::reserve(int capacity)
 }
 
 bool
-StringBuilder::appendByte(char b)
-{
-  if(!b)
-    return append(0);
-  if(d->length + 1 >= d->alloc && !reallocData(d->length + 1, true))
-    return false;
-  d->text[d->length++] = b;
-  d->text[d->length] = '\0';
-  return true;
-}
-
-bool
 StringBuilder::append(unsigned long ucs4)
 {
   char is[8]; 

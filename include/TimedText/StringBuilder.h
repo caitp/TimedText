@@ -90,7 +90,6 @@ public:
   }
 
   bool reserve(int capacity);
-  bool appendByte(char b);
   bool append(unsigned long ucs4);
   bool append(const char *text, int len);
   inline bool append(const String &str) {
