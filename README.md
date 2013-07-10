@@ -1,6 +1,11 @@
 TimedText
 =========
 
+1. [Build Status](#build-status)
+2. [About](#about)
+3. [API Reference](#api-reference)
+4. [License](#license)
+
 ### Build Status [![Build Status](https://travis-ci.org/caitp/TimedText.png?branch=master)](https://travis-ci.org/caitp/TimedText)
 
 ### About
@@ -16,6 +21,8 @@ libraries, though support for alternative XML libraries such as
 [PugiXML](http://pugixml.org/) may be added later on, for certain use-cases. As the primary
 use-case is use within a browser, stream parsing is a nice thing to
 have.
+
+[back to top...](#timedtext)
 
 ### API Reference
 I've added a demo, for your viewing pleasure! This will be moved to the Wiki page soon,
@@ -122,6 +129,7 @@ main(int argc, char **argv) {
   }
 }
 ```
+[back to top...](#timedtext)
 
 ### License
 Copyright (c) 2013 Caitlin Potter and Contributors
@@ -148,3 +156,5 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+[back to top...](#timedtext)
