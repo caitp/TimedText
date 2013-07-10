@@ -35,7 +35,7 @@ Example stream-oriented WebVTT Parsing and displaying on the console:
 
 #include <TimedText/WebVTTParser.h>
 #include <TimedText/SynchronousBuffer.h>
-#include <ifstream>
+#include <fstream>
 #include <string>
 #include <cstdio>
 
