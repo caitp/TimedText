@@ -51,7 +51,7 @@ main(int argc, char **argv) {
     WebVTTFileParser(const char *file)
       : fileName(file)
     { 
-      parser = new WebVTTParser(buffer, this);
+      parser = new TimedText::WebVTTParser(buffer, this);
     }
 
     ~WebVTTFileParser()
