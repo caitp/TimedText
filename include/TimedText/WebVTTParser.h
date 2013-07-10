@@ -84,6 +84,13 @@ public:
   // expect the cues to be appended to it!
   void parsedCues(List<Cue> &result);
 
+  // Translate WebVTT CueText into a tree of Node objects
+  static bool cuetextToNodes(const String &cuetext, Node &tree);
+  // Convenience method of replacing the cue's nodes with nodes from
+  // cuetextToNodes() using its body text.
+  static bool parseCuetext(Cue &cue);
+  static Timestamp collectTimestamp(const String &line, int &position);
+
 private:
   bool parseHeader();
   bool parseBOM();
@@ -95,7 +102,6 @@ private:
   void dropCue();
 
   ParseState collectTimingsAndSettings(const String &line);
-  Timestamp collectTimeStamp(const String &line, int &position);
 
   ParseState state;
   Buffer &buffer;

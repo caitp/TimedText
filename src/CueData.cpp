@@ -192,4 +192,16 @@ CueData::resetCueSettings()
 {
 }
 
+bool
+CueData::nodes(Node &result) const
+{
+  return false;
+}
+
+bool
+CueData::setNodes(const Node &result)
+{
+  return false;
+}
+
 } // TimedText

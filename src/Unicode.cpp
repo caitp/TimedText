@@ -26,6 +26,7 @@
 //
 
 #include <TimedText/Unicode.h>
+#include <TimedText/String.h>
 #include <cstring>
 
 namespace TimedText
@@ -44,8 +45,8 @@ static const int offsetUtf8Sequences[maxUtf8Bytes + 1] =
 
 static const struct validUtf8Sequence
 {
-  unsigned long lowChar;
-  unsigned long highChar;
+  uint32 lowChar;
+  uint32 highChar;
   int numBytes;
   char validBytes[8];
 } validUtf8[numUtf8Sequences] =
@@ -61,7 +62,7 @@ static const struct validUtf8Sequence
 };
 
 bool
-Unicode::toUtf8(unsigned long ucs4, char *out, int &len)
+Unicode::toUtf8(uint32 ucs4, char *out, int &len)
 {
   const char replacement[] = {'\xef','\xbf','\xbd'};
   bool isUC = isChar(ucs4);
@@ -113,7 +114,7 @@ Unicode::utf8Length(const char *utf8, int len)
       // or else add 3 to length for replacement char.
       int t = utf8NumTrailBytes(c);
       utf8MaskLeadByte(c,t);
-      unsigned long uc = c & 0xFF;
+      uint32 uc = c & 0xFF;
       int j=0;
       for(; j<t && i < len; ++j) {
         char next = utf8[i++];
@@ -160,7 +161,7 @@ Unicode::toValidUtf8(char *out, int alloc, int &olen,
       // or else add 3 to length for replacement char.
       int t = utf8NumTrailBytes(c);
       utf8MaskLeadByte(c,t);
-      unsigned long uc = c & 0xFF;
+      uint32 uc = c & 0xFF;
       int j = 0;
       for(; j<t && i < len; ++j) {
         char next = in[i++];
@@ -196,6 +197,45 @@ Unicode::toValidUtf8(char *out, int alloc, int &olen,
     }
   }
   return true;
+}
+
+uint32
+Unicode::utf8ToUCS4(const char *text, int len, int &position)
+{
+  if(!text)
+    return 0xFFFD;
+  if(len < 0)
+    len = ::strlen(text);
+  if(position >= len)
+    return 0x00;
+  char c = text[position++];
+  if(utf8IsSingle(c))
+    return uint32(c);
+  if(utf8IsLead(c)) {
+    int n = utf8NumTrailBytes(c);
+    if(position + n >= len)
+      return uint32(-1);
+    utf8MaskLeadByte(c, n);
+    uint32 uc = c;
+    for(int i=0; i<n; ++i) {
+      if(utf8IsTrail(text[position]))
+        uc = ((uc << 6) | (text[position++] & 0x3f));
+      else {
+        uc = 0xFFFD;
+        break;
+      }
+    }
+    return uc;
+  }
+  while(utf8IsTrail(text[position]))
+    ++position;
+  return 0xFFFD;
+}
+
+uint32
+Unicode::utf8ToUCS4(const String &str, int &position)
+{
+  return utf8ToUCS4(str.text(), str.length(), position);
 }
 
 } // TimedText
