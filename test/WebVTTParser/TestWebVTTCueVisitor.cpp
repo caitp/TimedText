@@ -117,3 +117,50 @@ TEST(WebVTTCueVisitor,ThreeLevel)
   EXPECT_EQ(2, visitor.deepest);
   EXPECT_EQ(4, visitor.visited);
 }
+
+static const char webvttCueSkipBold[] =
+"I don't want to visit <b>Cthulhu's </b>evil <i>henchmen<b> of doom</b></i>";
+TEST(WebVTTCueVisitor,SkipBoldBranches)
+{
+  class Visitor : public NodeVisitor
+  {
+  public:
+    Visitor() : visited(0), depth(0), deepest(0), textTokens(0) {}
+    void fail() {
+      ASSERT_TRUE(false);
+    }
+    bool enter(const Node &node) {
+      if(node.element() == BoldNode)
+        return false;
+      ++depth;
+      if(depth > deepest)
+        deepest = depth;
+      return true;
+    }
+    void leave(const Node &node) {
+      --depth;
+    }
+    void visit(Node &node) {
+      if(node.element() == TextNode) {
+        text += node.text();
+        ++textTokens;
+      }
+      visited++;
+    }
+    String text;
+    int visited;
+    int depth;
+    int deepest;
+    int textTokens;
+  };
+  Visitor visitor;
+  testVisitor(webvttCueSkipBold, visitor);
+  EXPECT_STREQ("I don't want to visit evil henchmen", visitor.text);
+  EXPECT_EQ(0, visitor.depth);
+  EXPECT_EQ(1, visitor.deepest);
+
+  // Of the 8 total tokens, only on two are not visited (the inner text
+  // of the bold nodes)
+  EXPECT_EQ(6, visitor.visited);
+  EXPECT_EQ(3, visitor.textTokens);
+}

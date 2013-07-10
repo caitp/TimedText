@@ -169,11 +169,6 @@ WebVTTTokenizer::next(const String &input, int &position, WebVTTToken &result)
     return false;
   token = &result;
 
-  // This is not actually correct, we probably need to treat this as an
-  // end-of-file marker
-  if(input.isEmpty() || position >= input.length())
-    return false;
-
   uint32 c = nextChar(input, position);
 
   switch(_state) {

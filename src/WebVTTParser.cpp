@@ -431,133 +431,133 @@ WebVTTParser::cuetextToNodes(const String &cuetext, Node &result)
 
   // 6. Loop: if position is past the end of input, return result and abort
   //    these steps
-  while(position < input.length()) {
-    if(tokenizer.next(input, position, token)) {
-      // 7. Let token be the result of invoking the WebVTT cue text tokenizer.
-      if(token.type() == WebVTTToken::Text) {
-        // If token is a string
-        //   1. Create a WebVTT Text Object whose value is the value of the
-        //      string token token.
-        Node newTextNode(TextNode);
-        String text;
-        token.data(text);
-        newTextNode.setText(text);
-        //   2. Append the newly created WebVTT Text Object to current
-        current.push(newTextNode);
-      } else if(token.type() == WebVTTToken::StartTag) {
-        // If token is a start tag
-        String name;
-        token.data(name);
-        Node newNode;
-        List<String> classes = token.classes();
-        String annotation = token.annotation();
-        if(!::strcmp("c",name))
-          // If the tag is "c"
-          //   Attach a WebVTT Class Object.
-          newNode = Node(ClassNode);
-        else if(!::strcmp("i", name))
-          // If the tag name is "i"
-          //   Attach a WebVTT Italic Object.
-          newNode = Node(ItalicNode);
-        else if(!::strcmp("b", name))
-          // If the tag name is "b"
-          //   Attach a WebVTT Bold Object.
-          newNode = Node(BoldNode);
-        else if(!::strcmp("u", name))
-          // If the tag name is "u"
-          //   Attach a WebVTT Underline Object.
-          newNode = Node(UnderlineNode);
-        else if(!::strcmp("ruby", name))
-          // If the tag name is "ruby"
-          //   Attach a WebVTT Ruby Object.
-          newNode = Node(RubyNode);
-        else if(!::strcmp("rt", name)) {
-          // If the tag name is "rt"
-          //   If current is a WebVTT Ruby Object, then attach a WebVTT Ruby
-          //   Text Object.
-          if(current.element() == RubyNode)
-            newNode = Node(RubyTextNode);
-        } else if(!::strcmp("v", name)) {
-          newNode = Node(VoiceNode);
-          newNode.setVoice(annotation);
-        } else if(!::strcmp("lang", name)) {
-          langStack.push(annotation);
-          newNode = Node(LangNode);
-        }
-
-        if(newNode.type() == InternalNode) {
-          // When the steps above say to attach a WebVTT Internal Node Object
-          // of a particular concrete class, the user agent must run the
-          // following steps:
-          // 2. Set the new object's list of applicable classes to the list of
-          //    classes in the token, excluding any classes that are the empty
-          //    string.
-          newNode.setApplicableClasses(classes);
-          // 3. Set the new object's applicable language to the top entry on
-          //    the language stack, if it is not empty.
-          String lang;
-          if(langStack.lastItem(lang))
-            newNode.setLang(lang);
-          // 4. Append the newly created node object to current.
-          current.push(newNode);
-          nodeStack.push(current);
-          current = newNode;
-        }
-      } else if(token.type() == WebVTTToken::EndTag) {
-        // If token is an end tag
-        //   If any of the following conditions is true, then let current be
-        //   the parent node of current
-        String name;
-        token.data(name);
-        #define MatchingTag(tag,type) \
-        (!::strcmp(tag,name) && current.element() == type)
-        if(MatchingTag("c", ClassNode)
-           || MatchingTag("i", ItalicNode)
-           || MatchingTag("b", BoldNode)
-           || MatchingTag("u", UnderlineNode)
-           || MatchingTag("ruby", RubyNode)
-           || MatchingTag("rt", RubyTextNode)
-           || MatchingTag("v", VoiceNode)) {
-          nodeStack.pop(current);
-        } else if(MatchingTag("lang", LangNode)) {
-          // Otherwise, if the tag name of the end tag token token is "lang",
-          // and current is a WebVTT Language Object, then let current be the
-          // parent node of current, and pop the top value from the language
-          // stack.
-          String unused;
-          langStack.pop(unused);
-          nodeStack.pop(current);
-        } else if(MatchingTag("ruby", RubyTextNode)) {
-          // Otherwise, if the tag name of the end tag token token is "ruby"
-          // and current is a WebVTT Ruby Text Object, then let current be
-          // the parent node of the parent node of current.
-          nodeStack.pop(current);
-          nodeStack.pop(current);
-        }
-        #undef MatchingTag
-      } else if(token.type() == WebVTTToken::TimestampTag) {
-        // If token is a timestamp tag
-        //   1. Let input be the tag value.
-        //   2. Let position be a pointer into input, initially pointing at the
-        //      start of the string.
-        //   3. Collect a WebVTT timestamp
-        //   4. If the algorithm does not fail, and if position now points at
-        //      the end of input (i.e. there are no trailing characters after
-        //      the timestamp), then create a WebVTT Timestamp Object whose
-        //      value is the collected time, then append it to current.
-        Timestamp time = token.timestamp();
-        if(time != MalformedTimestamp) {
-          // The WebVTTToken will return a MalformedTimestamp if the time is
-          // not valid, and so it can be safely ignored in that case.
-          Node newNode(TimestampNode);
-          newNode.setTimestamp(time);
-          current.push(newNode);
-        }
+  while(tokenizer.next(input, position, token)) {
+    if(token.type() == WebVTTToken::EndOfFile)
+      break;
+    // 7. Let token be the result of invoking the WebVTT cue text tokenizer.
+    else if(token.type() == WebVTTToken::Text) {
+      // If token is a string
+      //   1. Create a WebVTT Text Object whose value is the value of the
+      //      string token token.
+      Node newTextNode(TextNode);
+      String text;
+      token.data(text);
+      newTextNode.setText(text);
+      //   2. Append the newly created WebVTT Text Object to current
+      current.push(newTextNode);
+    } else if(token.type() == WebVTTToken::StartTag) {
+      // If token is a start tag
+      String name;
+      token.data(name);
+      Node newNode;
+      List<String> classes = token.classes();
+      String annotation = token.annotation();
+      if(!::strcmp("c",name))
+        // If the tag is "c"
+        //   Attach a WebVTT Class Object.
+        newNode = Node(ClassNode);
+      else if(!::strcmp("i", name))
+        // If the tag name is "i"
+        //   Attach a WebVTT Italic Object.
+        newNode = Node(ItalicNode);
+      else if(!::strcmp("b", name))
+        // If the tag name is "b"
+        //   Attach a WebVTT Bold Object.
+        newNode = Node(BoldNode);
+      else if(!::strcmp("u", name))
+        // If the tag name is "u"
+        //   Attach a WebVTT Underline Object.
+        newNode = Node(UnderlineNode);
+      else if(!::strcmp("ruby", name))
+        // If the tag name is "ruby"
+        //   Attach a WebVTT Ruby Object.
+        newNode = Node(RubyNode);
+      else if(!::strcmp("rt", name)) {
+        // If the tag name is "rt"
+        //   If current is a WebVTT Ruby Object, then attach a WebVTT Ruby
+        //   Text Object.
+        if(current.element() == RubyNode)
+          newNode = Node(RubyTextNode);
+      } else if(!::strcmp("v", name)) {
+        newNode = Node(VoiceNode);
+        newNode.setVoice(annotation);
+      } else if(!::strcmp("lang", name)) {
+        langStack.push(annotation);
+        newNode = Node(LangNode);
       }
 
-      // Reset the tokenizer...
-      token.reset();
+      if(newNode.type() == InternalNode) {
+        // When the steps above say to attach a WebVTT Internal Node Object
+        // of a particular concrete class, the user agent must run the
+        // following steps:
+        // 2. Set the new object's list of applicable classes to the list of
+        //    classes in the token, excluding any classes that are the empty
+        //    string.
+        newNode.setApplicableClasses(classes);
+        // 3. Set the new object's applicable language to the top entry on
+        //    the language stack, if it is not empty.
+        String lang;
+        if(langStack.lastItem(lang))
+          newNode.setLang(lang);
+        // 4. Append the newly created node object to current.
+        current.push(newNode);
+        nodeStack.push(current);
+        current = newNode;
+      }
+    } else if(token.type() == WebVTTToken::EndTag) {
+      // If token is an end tag
+      //   If any of the following conditions is true, then let current be
+      //   the parent node of current
+      String name;
+      token.data(name);
+      #define MatchingTag(tag,type) \
+      (!::strcmp(tag,name) && current.element() == type)
+      if(MatchingTag("c", ClassNode)
+         || MatchingTag("i", ItalicNode)
+         || MatchingTag("b", BoldNode)
+         || MatchingTag("u", UnderlineNode)
+         || MatchingTag("ruby", RubyNode)
+         || MatchingTag("rt", RubyTextNode)
+         || MatchingTag("v", VoiceNode)) {
+        nodeStack.pop(current);
+      } else if(MatchingTag("lang", LangNode)) {
+        // Otherwise, if the tag name of the end tag token token is "lang",
+        // and current is a WebVTT Language Object, then let current be the
+        // parent node of current, and pop the top value from the language
+        // stack.
+        String unused;
+        langStack.pop(unused);
+        nodeStack.pop(current);
+      } else if(MatchingTag("ruby", RubyTextNode)) {
+        // Otherwise, if the tag name of the end tag token token is "ruby"
+        // and current is a WebVTT Ruby Text Object, then let current be
+        // the parent node of the parent node of current.
+        nodeStack.pop(current);
+        nodeStack.pop(current);
+      }
+      #undef MatchingTag
+    } else if(token.type() == WebVTTToken::TimestampTag) {
+      // If token is a timestamp tag
+      //   1. Let input be the tag value.
+      //   2. Let position be a pointer into input, initially pointing at the
+      //      start of the string.
+      //   3. Collect a WebVTT timestamp
+      //   4. If the algorithm does not fail, and if position now points at
+      //      the end of input (i.e. there are no trailing characters after
+      //      the timestamp), then create a WebVTT Timestamp Object whose
+      //      value is the collected time, then append it to current.
+      Timestamp time = token.timestamp();
+      if(time != MalformedTimestamp) {
+        // The WebVTTToken will return a MalformedTimestamp if the time is
+        // not valid, and so it can be safely ignored in that case.
+        Node newNode(TimestampNode);
+        newNode.setTimestamp(time);
+        current.push(newNode);
+      }
     }
+
+    // Reset the tokenizer...
+    token.reset();
   }
 
   return true;
