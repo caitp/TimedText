@@ -65,3 +65,55 @@ TEST(WebVTTCueVisitor,SingleLevel)
   testVisitor(webvttCue1Level, visitor);
   EXPECT_EQ(7, visitor.visited);
 }
+
+static const char webvttCue3Level[] =
+"<lang en-US><rt>Hello universe </rt><b>It's alright</b></lang>";
+
+TEST(WebVTTCueVisitor,ThreeLevel)
+{
+  class Visitor : public NodeVisitor
+  {
+  public:
+    Visitor() : visited(0), depth(0), deepest(0) {}
+    void fail() {
+      ASSERT_TRUE(false);
+    }
+    bool enter(const Node &node) {
+      EXPECT_TRUE(node.element() == LangNode || node.element() == BoldNode);
+      stack.push(node);
+      ++depth;
+      if(depth > deepest)
+        deepest = depth;
+      return true;
+    }
+    void leave(const Node &node) {
+      Node parent;
+      EXPECT_TRUE(stack.pop(parent));
+      EXPECT_TRUE(parent==node);
+      --depth;
+    }
+    void visit(Node &node) {
+      Node parent;
+      stack.lastItem(parent);
+      if(parent.element() == LangNode) {
+        // There should be no <rt> outside of <ruby>
+        EXPECT_NE(RubyTextNode, node.element());
+        if(node.element() == TextNode)
+          EXPECT_STREQ("Hello universe ", node.text());
+      } else if(parent.element() == BoldNode) {
+        EXPECT_EQ(TextNode, node.element());
+        EXPECT_STREQ("It's alright", node.text());
+      }
+      visited++;
+    }
+    List<Node> stack;
+    int visited;
+    int depth;
+    int deepest;
+  };
+  Visitor visitor;
+  testVisitor(webvttCue3Level, visitor);
+  EXPECT_EQ(0, visitor.depth);
+  EXPECT_EQ(2, visitor.deepest);
+  EXPECT_EQ(4, visitor.visited);
+}

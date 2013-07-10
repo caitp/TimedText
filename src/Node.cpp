@@ -336,7 +336,8 @@ Node::visit(NodeVisitor &visitor)
       }
     } else {
       // Notify visitor that we are leaving a branch of the tree
-      visitor.leave(*top);
+      if(!top->isInternalText())
+        visitor.leave(*top);
       stack.pop(it);
     }
   }
