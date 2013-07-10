@@ -32,54 +32,29 @@ is coming soon.
 
 Example stream-oriented WebVTT Parsing and displaying on the console:
 ```C++
-//
-// Copyright (c) 2013 Caitlin Potter and Contributors
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//  * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//  * Redistributions in binary form must reproduce the above copyright
-// notice, this list of conditions and the following disclaimer in the
-// documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-
 #include <TimedText/WebVTTParser.h>
 #include <TimedText/SynchronousBuffer.h>
 #include <fstream>
 #include <string>
 #include <cstdio>
 
-using namespace TimedText;
-
 int
 main(int argc, char **argv) {
+  // Make a nicer name for a List of Cues, since we refer to it
+  // a lot.
+
+  typedef TimedText::List<TimedText::Cue> CueList;
   // Use first command line parameter as filename
   if(argc < 2)
     return 1;
 
   // Client object is notified
-  struct WebVTTFileParser : public Client
+  struct WebVTTFileParser : public TimedText::Client
   { 
     WebVTTFileParser(const char *file)
       : fileName(file)
     { 
-      parser = new WebVTTParser(buffer, this);
+      parser = new TimedText::WebVTTParser(buffer, this);
     }
 
     ~WebVTTFileParser()
@@ -112,15 +87,15 @@ main(int argc, char **argv) {
     // there are new Cues available
     void cuesAvailable()
     {
-      List<Cue> newCues;
+      CueList newCues;
       parser->parsedCues(newCues);
       myCues += newCues;
     }
-    SynchronousBuffer buffer;
-    WebVTTParser *parser;
+    TimedText::SynchronousBuffer buffer;
+    TimedText::WebVTTParser *parser;
     std::string fileName;
     std::ifstream file;
-    List<Cue> myCues;
+    CueList myCues;
   };
 
   WebVTTFileParser p(argv[1]);
@@ -130,29 +105,29 @@ main(int argc, char **argv) {
     //
     // This one will print TextNodes at indents depending on what level branch
     // they are on.
-    class Visitor : public NodeVisitor
+    class Visitor : public TimedText::NodeVisitor
     {
     public:
       Visitor() : indent(0) {}
-      bool enter(const Node &node)
+      bool enter(const TimedText::Node &node)
       {
         indent += 2;
         return true;
       }
-      void leave(const Node &node)
+      void leave(const TimedText::Node &node)
       {
         indent -= 2;
       }
-      void visit(Node &node)
+      void visit(TimedText::Node &node)
       {
-        if(node.element() == TextNode) {
+        if(node.element() == TimedText::TextNode) {
           ::printf("%*s%s%c", indent, "", node.text().text(),
                    node.text().endsWith('\n') ? '\0' : '\n');
         }
       }
       int indent;
     };
-    for(List<Cue>::iterator it = p.myCues.begin(); it < p.myCues.end(); ++it) {
+    for(CueList::iterator it = p.myCues.begin(); it < p.myCues.end(); ++it) {
       // Print the Cue ID, if one is present
       if(!it->id().isEmpty())
         ::printf("%s\n", it->id().text());
