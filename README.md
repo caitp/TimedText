@@ -32,12 +32,40 @@ is coming soon.
 
 Example stream-oriented WebVTT Parsing and displaying on the console:
 ```C++
+//
+// Copyright (c) 2013 Caitlin Potter and Contributors
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//  * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//  * Redistributions in binary form must reproduce the above copyright
+// notice, this list of conditions and the following disclaimer in the
+// documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
 
 #include <TimedText/WebVTTParser.h>
 #include <TimedText/SynchronousBuffer.h>
 #include <fstream>
 #include <string>
 #include <cstdio>
+
+using namespace TimedText;
 
 int
 main(int argc, char **argv) {
@@ -46,12 +74,12 @@ main(int argc, char **argv) {
     return 1;
 
   // Client object is notified
-  struct WebVTTFileParser : public TimedText::Client
+  struct WebVTTFileParser : public Client
   { 
     WebVTTFileParser(const char *file)
       : fileName(file)
     { 
-      parser = new TimedText::WebVTTParser(buffer, this);
+      parser = new WebVTTParser(buffer, this);
     }
 
     ~WebVTTFileParser()
@@ -60,33 +88,39 @@ main(int argc, char **argv) {
     }
 
     // Read and parse the file in chunks of 4096 bytes
-    bool parse() {
+    bool parse()
+    {
       file.open(fileName.c_str(), std::ios::in|std::ios::binary);
       if(!file.good())
         return false;
       char buf[0x1000] = "";
-      while(!file.eof()) {
+      while(true) {
+        bool final = false;
         std::streamsize n = file.readsome(buf, sizeof(buf));
-        buffer.refill(buf, n, file.eof());
+        if(n < 0x1000)
+          final = true;
+        buffer.refill(buf, n, final);
         if(!parser->parse())
           return false;
+        if(final)
+          break;
       }
       return true;
     }
-    
-    typedef TimedText::List<TimedText::Cue> CueList;
+
     // This message is called by the parser to notify the client that
     // there are new Cues available
-    void parsedCues() {
-      CueList newCues;
+    void cuesAvailable()
+    {
+      List<Cue> newCues;
       parser->parsedCues(newCues);
       myCues += newCues;
     }
-    TimedText::SynchronousBuffer buffer;
-    TimedText::WebVTTParser *parser;
+    SynchronousBuffer buffer;
+    WebVTTParser *parser;
     std::string fileName;
     std::ifstream file;
-    CueList myCues;
+    List<Cue> myCues;
   };
 
   WebVTTFileParser p(argv[1]);
@@ -96,31 +130,34 @@ main(int argc, char **argv) {
     //
     // This one will print TextNodes at indents depending on what level branch
     // they are on.
-    class Visitor : public TimedText::NodeVisitor
+    class Visitor : public NodeVisitor
     {
     public:
       Visitor() : indent(0) {}
-      bool enter(const Node &node) {
+      bool enter(const Node &node)
+      {
         indent += 2;
         return true;
       }
-      void leave(const Node &node) {
+      void leave(const Node &node)
+      {
         indent -= 2;
       }
-      void visit(Node &node) {
-        if(node.element() == TimedText::TextNode) {
-          ::printf("%*s%s%c", indent, "", node.text(),
+      void visit(Node &node)
+      {
+        if(node.element() == TextNode) {
+          ::printf("%*s%s%c", indent, "", node.text().text(),
                    node.text().endsWith('\n') ? '\0' : '\n');
         }
       }
       int indent;
     };
-    for(TimedText::List<TimedText::Cue>::iterator it = p.myCues.begin(); it < p.myCues.end(); ++it) {
+    for(List<Cue>::iterator it = p.myCues.begin(); it < p.myCues.end(); ++it) {
       // Print the Cue ID, if one is present
       if(!it->id().isEmpty())
-        ::printf("%s\n", it->id());
+        ::printf("%s\n", it->id().text());
       // Print the start time and end time of the cue, in seconds (double)
-      ::printf("%f --> %\nf", it->startTime().toSeconds(), it->endTime().toSeconds());
+      ::printf("%f --> %f\n", it->startTime().toSeconds(), it->endTime().toSeconds());
       // Parse the CueText for the given cue, and walk it.
       TimedText::WebVTTParser::parseCuetext(*it);
       Visitor v;
@@ -128,6 +165,7 @@ main(int argc, char **argv) {
     }
   }
 }
+
 ```
 [back to top...](#timedtext)
 
