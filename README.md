@@ -61,7 +61,7 @@ main(int argc, char **argv) {
 
     // Read and parse the file in chunks of 4096 bytes
     bool parse() {
-      file.open(fileName, std::ios::in|std::ios::binary);
+      file.open(fileName.c_str(), std::ios::in|std::ios::binary);
       if(!file.good())
         return false;
       char buf[0x1000] = "";
