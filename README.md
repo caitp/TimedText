@@ -18,8 +18,110 @@ use-case is use within a browser, stream parsing is a nice thing to
 have.
 
 ### API Reference
-I'm sorry, there will be more of this later on :( Just let me hack on
-this for a while okay? Okay, cool.
+I've added a demo, for your viewing pleasure! This will be moved to the Wiki page soon,
+but I thought it would be a good idea to give an idea how this library can be used. It
+is of course capable of much more than this, of course. An easier to read API reference
+is coming soon.
+
+Example stream-oriented WebVTT Parsing and displaying on the console:
+```C++
+
+#include <TimedText/WebVTTParser.h>
+#include <TimedText/SynchronousBuffer.h>
+#include <ifstream>
+#include <string>
+#include <cstdio>
+
+int
+main(int argc, char **argv) {
+  // Use first command line parameter as filename
+  if(argc < 2)
+    return 1;
+
+  // Client object is notified
+  struct WebVTTFileParser : public TimedText::Client
+  { 
+    WebVTTFileParser(const char *file)
+      : fileName(file)
+    { 
+      parser = new WebVTTParser(buffer, this);
+    }
+
+    ~WebVTTFileParser()
+    {
+      delete parser;
+    }
+
+    // Read and parse the file in chunks of 4096 bytes
+    bool parse() {
+      file.open(fileName, std::ios::in|std::ios::binary);
+      if(!file.good())
+        return false;
+      char buf[0x1000] = "";
+      while(!file.eof()) {
+        std::streamsize n = file.readsome(buf, sizeof(buf));
+        buffer.refill(buf, n, file.eof());
+        if(!parser->parse())
+          return false;
+      }
+      return true;
+    }
+    
+    typedef TimedText::List<TimedText::Cue> CueList;
+    // This message is called by the parser to notify the client that
+    // there are new Cues available
+    void parsedCues() {
+      CueList newCues;
+      parser->parsedCues(newCues);
+      myCues += newCues;
+    }
+    TimedText::SynchronousBuffer buffer;
+    TimedText::WebVTTParser *parser;
+    std::string fileName;
+    std::ifstream file;
+    CueList myCues;
+  };
+
+  WebVTTFileParser p(argv[1]);
+  if(p.parse()) {
+    // Create a Node visitor to visit and perform some action on each Node in the
+    // tree of CueText Nodes.
+    //
+    // This one will print TextNodes at indents depending on what level branch
+    // they are on.
+    class Visitor : public TimedText::NodeVisitor
+    {
+    public:
+      Visitor() : indent(0) {}
+      bool enter(const Node &node) {
+        indent += 2;
+        return true;
+      }
+      void leave(const Node &node) {
+        indent -= 2;
+      }
+      void visit(Node &node) {
+        if(node.element() == TimedText::TextNode) {
+          ::printf("%*s%s%c", indent, "", node.text(),
+                   node.text().endsWith('\n') ? '\0' : '\n');
+        }
+      }
+      int indent;
+    };
+    for(TimedText::List<TimedText::Cue>::iterator it = p.myCues.begin(); it < p.myCues.end(); ++it) {
+      // Print the Cue ID, if one is present
+      if(!it->id().isEmpty())
+        ::printf("%s\n", it->id());
+      // Print the start time and end time of the cue, in seconds (double)
+      ::printf("%f --> %\nf", it->startTime().toSeconds(), it->endTime().toSeconds());
+      // Parse the CueText for the given cue, and walk it.
+      TimedText::WebVTTParser::parseCuetext(*it);
+      Visitor v;
+      it->visit(v);
+    }
+  }
+}
+```
 
 ### License
 Copyright (c) 2013 Caitlin Potter and Contributors
