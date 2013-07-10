@@ -27,7 +27,7 @@
 
 import sys,os,re
 from waflib import Logs
-SUBDIRS=['Text', 'List', 'Buffer', 'Sniffer', 'WebVTTParser', 'Cue']
+SUBDIRS=['Text', 'List', 'Node', 'Buffer', 'Sniffer', 'WebVTTParser', 'Cue']
 
 def options(ctx):
 	ctx.add_option('--compact',dest='compact',
@@ -99,7 +99,8 @@ def build(ctx):
 		src=ctx.sources(path=os.path.join(ctx.path.abspath(),subdir))
 		src.append('gtest_main.cc')
 		ctx.program(name=name, target='../%s'%name, source=src,
-			        use=['gtest','timedtext'], lib=lib, features=features,
+			        use=['gtest','timedtext'], lib=lib,
+			        includes='../src', features=features,
 			        defines=['private=public','protected=public'])
 
 	val = re.compile('=+\d+=+ (?P<details>.*)')

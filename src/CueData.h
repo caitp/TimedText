@@ -71,6 +71,9 @@ public:
   virtual void applySettings(const String &settings);
   virtual void resetCueSettings();
 
+  virtual bool nodes(Node &result) const;
+  virtual bool setNodes(const Node &nodes);
+
   CueType type;
   AtomicInt ref;
   String id;

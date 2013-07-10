@@ -47,10 +47,22 @@ typedef unsigned short ushort;
 typedef unsigned long ulong;
 
 #if !defined(_MSC_VER) || _MSC_VER > 1500
+typedef ::int8_t int8;
+typedef ::int16_t int16;
+typedef ::int32_t int32;
 typedef ::int64_t int64;
+typedef ::uint8_t uint8;
+typedef ::uint16_t uint16;
+typedef ::uint32_t uint32;
 typedef ::uint64_t uint64;
 #elif defined(_MSC_VER)
+typedef __int8 int8;
+typedef __int16 int16;
+typedef __int32 int32;
 typedef __int64 int64;
+typedef unsigned __int8 uint8;
+typedef unsigned __int16 uint16;
+typedef unsigned __int32 uint32;
 typedef unsigned __int64 uint64;
 #else
 #  error "Don't know int64 type for this platform. File a bug!"
@@ -124,6 +136,21 @@ TT_DECLARE_TYPEINFO(int64,TT_PRIMITIVE_TYPE);
 TT_DECLARE_TYPEINFO(uint64,TT_PRIMITIVE_TYPE);
 TT_DECLARE_TYPEINFO(float,TT_PRIMITIVE_TYPE);
 TT_DECLARE_TYPEINFO(double,TT_PRIMITIVE_TYPE);
+
+template<unsigned bytes> struct IntForSize { };
+template<> struct IntForSize<1>{ typedef int8 type; };
+template<> struct IntForSize<2>{ typedef int16 type; };
+template<> struct IntForSize<4>{ typedef int32 type; };
+template<> struct IntForSize<8>{ typedef int64 type; };
+
+template<unsigned bytes> struct UintForSize { };
+template<> struct UintForSize<1>{ typedef uint8 type; };
+template<> struct UintForSize<2>{ typedef uint16 type; };
+template<> struct UintForSize<4>{ typedef uint32 type; };
+template<> struct UintForSize<8>{ typedef uint64 type; };
+
+typedef IntForSize<sizeof(void *)>::type ptrdiff;
+typedef UintForSize<sizeof(void *)>::type uintptr;
 
 }
 

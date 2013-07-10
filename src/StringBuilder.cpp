@@ -224,4 +224,16 @@ StringBuilder::replaceAll(unsigned long search,
   return replaceAll(us, sl, ur, rl);
 }
 
+void
+StringBuilder::removeTrailingChar()
+{
+  int pos = d->length - 1;
+  while(pos > 0 && Unicode::utf8IsTrail(d->text[pos])) --pos;
+  // pos should point to a lead or single byte now...
+  if(pos > 0) {
+    d->length = pos;
+    d->text[d->length] = '\0';
+  }
+}
+
 }

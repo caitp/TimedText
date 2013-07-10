@@ -28,9 +28,12 @@
 #ifndef __TimedText_Unicode__
 #define __TimedText_Unicode__
 
+#include <TimedText/Types.h>
+
 namespace TimedText
 {
 
+class String;
 // Unicode contains static methods for converting between unicode encodings
 class Unicode
 {
@@ -56,7 +59,7 @@ public:
 
   // Returns true if a single UCS4 codepoint is a unicode non-character, otherwise
   // return false.
-  static bool isNonChar(unsigned long ucs4)
+  static bool isNonChar(uint32 ucs4)
   {
   	return ucs4 >= NonCharBegin && 
   	      (ucs4 <= NonCharEnd || (ucs4 & NonCharMask) == NonCharMask) &&
@@ -65,7 +68,7 @@ public:
 
   // Return true if a single UCS4 codepoint is a unicode character, otherwise
   // return false.
-  static bool isChar(unsigned long ucs4)
+  static bool isChar(uint32 ucs4)
   {
   	return ucs4 < HighSurrogateBegin ||
   		   (ucs4 > LowSurrogateEnd && ucs4 <= CodepointLimit &&
@@ -75,7 +78,7 @@ public:
   // Return length in bytes of Unicode character encoded as UTF8
   // The character is assumed to be a valid Unicode character, and
   // does not test with isChar().
-  static int utf8Length(unsigned long ucs4)
+  static int utf8Length(uint32 ucs4)
   {
   	// Ternary madness.
   	return ucs4 < 0x80 ? 1
@@ -127,7 +130,11 @@ public:
   // large enough to contain a UTF8 character). Returns false if the
   // character is not a unicode character, in which case the replacement
   // character is stored in the buffer.
-  static bool toUtf8(unsigned long ucs4, char *out, int &len);
+  static bool toUtf8(uint32 ucs4, char *out, int &len);
+
+  // Convert a UTF8 sequence to a single UCS4 character
+  static uint32 utf8ToUCS4(const char *text, int len, int &position);
+  static uint32 utf8ToUCS4(const String &str, int &position);
 };
 
 }
