@@ -148,9 +148,18 @@ public:
   }
 
   inline bool itemAt(int i, T &result) const {
-    if(i < 0 || i > p.size())
+    if(i < 0 || i >= p.size())
       return false;
     result = reinterpret_cast<Node *>(p.at(i))->get();
+    return true;
+  }
+
+  inline bool ptrTo(int i, T *&result) {
+    if(i < 0 || i >= p.size()) {
+      result = 0;
+      return false;
+    }
+    result = &reinterpret_cast<Node *>(p.at(i))->get();
     return true;
   }
 
@@ -410,9 +419,17 @@ public:
     return itemAt(length()-1, result);
   }
 
+  inline bool lastPtr(T *&result) {
+    return ptrTo(length()-1, result);
+  }
+
   // Return the first item without removing it.
   inline bool firstItem(T &result) {
     return itemAt(0, result);
+  }
+
+  inline bool firstPtr(T *&result) {
+    return ptrTo(0, result);
   }
 
 private:

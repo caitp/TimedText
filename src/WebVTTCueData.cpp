@@ -300,10 +300,29 @@ WebVTTCueData::resetCueSettings()
 }
 
 bool
-WebVTTCueData::tree(Node &result) const
+WebVTTCueData::nodes(Node &result) const
 {
-  result = nodes;
+  result = _nodes;
   return true;
+}
+
+bool
+WebVTTCueData::setNodes(const Node &nodes)
+{
+  if(nodes.type() == EmptyNode) {
+    _nodes = nodes;
+    return true;
+  } else if(nodes.element() != InternalTextNode) {
+    Node root(InternalTextNode);
+    if(root.push(nodes)) {
+      _nodes = root;
+      return true;
+    }
+  } else {
+    _nodes = nodes;
+    return true;
+  }
+  return false;
 }
 
 } // TimedText

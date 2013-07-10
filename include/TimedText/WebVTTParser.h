@@ -86,6 +86,9 @@ public:
 
   // Translate WebVTT CueText into a tree of Node objects
   static bool cuetextToNodes(const String &cuetext, Node &tree);
+  // Convenience method of replacing the cue's nodes with nodes from
+  // cuetextToNodes() using its body text.
+  static bool parseCuetext(Cue &cue);
   static Timestamp collectTimestamp(const String &line, int &position);
 
 private:

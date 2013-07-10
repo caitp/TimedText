@@ -124,8 +124,12 @@ public:
   void resetCueSettings();
 
   // Acquire a reference to the node tree
-  bool tree(Node &result) const;
-  inline bool nodeTree(Node &result) const { return tree(result); }
+  bool nodes(Node &result) const;
+
+  // Replace the tree of nodes
+  bool setNodes(const Node &nodes);
+
+  void visit(NodeVisitor &visitor);
 
 protected:
   CueData *d;

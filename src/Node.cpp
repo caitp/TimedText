@@ -285,4 +285,62 @@ Node::childCount() const
   return d->childCount();
 }
 
+struct VisitState
+{
+public:
+  inline VisitState() : i(0) {}
+  inline VisitState(const VisitState &v) : n(v.n), i(v.i) {}
+  inline VisitState(const Node &node) : n(node), i(0) {}
+  inline VisitState(const Node &node, int pos) : n(node), i(pos) {}
+  inline bool hasChildren() const { return n.childCount() > 0; }
+  inline bool isLeaf() const { return n.type() == LeafNode; }
+  inline bool isInternal() const { return n.type() == InternalNode; }
+  inline bool isInternalText() const {
+    return n.element() == InternalTextNode;
+  }
+  inline bool isEmpty() const { return n.type() == EmptyNode; }
+  inline bool next(VisitState &result) {
+    Node tmp;
+    if(n.itemAt(i++, tmp)) {
+      result = VisitState(tmp);
+      return true;
+    }
+    return false;
+  }
+  operator Node &() { return n; }
+  operator const Node &() const { return n; }
+
+  Node n;
+  int i;
+};
+
+void
+Node::visit(NodeVisitor &visitor)
+{
+  List<VisitState> stack;
+  stack.push(*this);
+  VisitState *top;
+  while(stack.lastPtr(top)) {
+    VisitState it;
+    if(top->next(it)) {
+      // Don't visit empty nodes.
+      if(it.isEmpty())
+        continue;
+      // Visit the item before descending
+      visitor.visit(it);
+
+      // We might need to descend, if it's
+      if(it.isInternal()) {
+        if(it.hasChildren() && (it.isInternalText() || visitor.enter(it)))
+          stack.push(it);
+      }
+    } else {
+      // Notify visitor that we are leaving a branch of the tree
+      visitor.leave(*top);
+      stack.pop(it);
+    }
+  }
+}
+
+
 } // TimedText

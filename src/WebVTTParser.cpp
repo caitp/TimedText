@@ -477,6 +477,9 @@ WebVTTParser::cuetextToNodes(const String &cuetext, Node &result)
           //   Text Object.
           if(current.element() == RubyNode)
             newNode = Node(RubyTextNode);
+        } else if(!::strcmp("v", name)) {
+          newNode = Node(VoiceNode);
+          newNode.setVoice(annotation);
         } else if(!::strcmp("lang", name)) {
           langStack.push(annotation);
           newNode = Node(LangNode);
@@ -558,6 +561,19 @@ WebVTTParser::cuetextToNodes(const String &cuetext, Node &result)
   }
 
   return true;
+}
+
+bool
+WebVTTParser::parseCuetext(Cue &cue)
+{
+  if(cue.type() != WebVTTCue)
+    return false;
+  Node nodes;
+  if(cuetextToNodes(cue.text(), nodes)) {
+    cue.setNodes(nodes);
+    return true;
+  }
+  return false;
 }
 
 } // TimedText

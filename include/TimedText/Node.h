@@ -91,6 +91,7 @@ enum NodeElementType
   LastNodeElementType,
 };
 
+class NodeVisitor;
 class Node
 {
 public:
@@ -169,11 +170,23 @@ public:
   const_iterator begin() const;
   const_iterator end() const;
 
+  // Traverse node tree with a hierarchical visitor, allowing
+  // branches to be optionally traversed or not.
+  void visit(NodeVisitor &visitor);
+
 private:
   NodeData *d;
 };
 
 TT_DECLARE_TYPEINFO(Node,TT_MOVABLE_TYPE);
+
+class NodeVisitor
+{
+public:
+  virtual bool enter(const Node &node) { return true; }
+  virtual void leave(const Node &node) {}
+  virtual void visit(Node &node) {}
+};
 
 }
 

@@ -254,4 +254,24 @@ Cue::resetCueSettings()
   d->resetCueSettings();
 }
 
+bool
+Cue::nodes(Node &result) const
+{
+  return d->nodes(result);
+}
+
+bool
+Cue::setNodes(const Node &nodes)
+{
+  return d->setNodes(nodes);
+}
+
+void
+Cue::visit(NodeVisitor &visitor)
+{
+  Node tree;
+  if(nodes(tree))
+    tree.visit(visitor);
+}
+
 } // TimedText

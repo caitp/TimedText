@@ -193,7 +193,13 @@ CueData::resetCueSettings()
 }
 
 bool
-CueData::tree(Node &result) const
+CueData::nodes(Node &result) const
+{
+  return false;
+}
+
+bool
+CueData::setNodes(const Node &result)
 {
   return false;
 }
