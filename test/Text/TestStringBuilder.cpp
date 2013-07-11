@@ -253,73 +253,103 @@ TEST(StringBuilder,IndexOf)
   EXPECT_EQ(-1, sb.indexOf(""));
 }
 
-TEST(StringBuilder,ReplaceAll)
+TEST(StringBuilder,ReplaceAllNOOP)
 {
   // Test that we don't do anything on null ops
   StringBuilder sb; // Empty
   EXPECT_TRUE(sb.replaceAll("Foo", "Bar"));
   const char *sameSearchAndReplace = "Foo";
   EXPECT_TRUE(sb.replaceAll(sameSearchAndReplace,sameSearchAndReplace));
+}
 
-  EXPECT_TRUE(sb.append("Hello Bob!"));
-  // Single replacement
-  EXPECT_TRUE(sb.replaceAll("Bob", "World"));
-  EXPECT_STREQ("Hello World!", sb.text());
-
+TEST(StringBuilder,ReplaceAllEqualLengths)
+{
+  bool result;
   // Replacement and search string equal lengths (best case)
-  sb.clear();
+  StringBuilder sb(30000,result);
+  EXPECT_TRUE(result);
+  StringBuilder sb2(30000,result);
+  EXPECT_TRUE(result);
   sb.append("Hello, Waldo");
-  StringBuilder sb2;
   sb2.append("Hello, Doggy");
-  for(int i=0; i<0x2000; ++i) {
+  for(int i=0; i<2048; ++i) {
     EXPECT_TRUE(sb.insert(0, "Hello, Waldo"));
     EXPECT_TRUE(sb2.insert(0, "Hello, Doggy"));
   }
   EXPECT_TRUE(sb.replaceAll("Waldo","Doggy"));
   EXPECT_EQ(sb2.length(), sb.length());
   EXPECT_STREQ(sb2.text(), sb.text());
+}
 
+TEST(StringBuilder,ReplaceAllSmallerSearch)
+{
   // Replacement smaller than search string (middle case)
-  sb.clear();
-  sb2.clear();
+  bool result;
+  StringBuilder sb(30000,result);
+  EXPECT_TRUE(result);
+  StringBuilder sb2(30000,result);
+  EXPECT_TRUE(result);
   sb.append("Hello Tortoise");
   sb2.append("Hello Donkey");
-  for(int i=0; i<0x2000; ++i) {
+  for(int i=0; i<2048; ++i) {
     EXPECT_TRUE(sb.insert(0, "Hello, Tortoise"));
     EXPECT_TRUE(sb2.insert(0, "Hello, Donkey"));
   }
   EXPECT_TRUE(sb.replaceAll("Tortoise", "Donkey"));
   EXPECT_EQ(sb2.length(), sb.length());
   EXPECT_STREQ(sb2.text(), sb.text());
+}
 
+TEST(StringBuilder,ReplaceAllBiggerSearch)
+{
   // Replacement larger than search string (worst case)
-  sb.clear();
-  sb2.clear();
+  bool result;
+  StringBuilder sb(30000,result);
+  EXPECT_TRUE(result);
+  StringBuilder sb2(30000,result);
+  EXPECT_TRUE(result);
   sb.append("Hello World");
   sb2.append("Hello Donkey");
-  for(int i=0; i<0x2000; ++i) {
-    EXPECT_TRUE(sb.insert(0, "Hello World "));
-    EXPECT_TRUE(sb2.insert(0, "Hello Donkey "));
+  for(int i=0; i<2048; ++i) {
+    EXPECT_TRUE(sb.insert(0, "Hello World"));
+    EXPECT_TRUE(sb2.insert(0, "Hello Donkey"));
   }
   EXPECT_TRUE(sb.replaceAll("World", "Donkey"));
   EXPECT_STREQ(sb2.text(), sb.text());
+}
 
+TEST(StringBuilder,ReplaceAllUCS4Replacement)
+{
   // Search for string, replace with UCS4 character
-  sb.clear();
-  sb2.clear();
+  bool result;
+  StringBuilder sb(64, result);
+  EXPECT_TRUE(result);
   EXPECT_TRUE(sb.append("Hello, World!"));
   EXPECT_TRUE(sb.replaceAll("Hello", 0x55E8));
   EXPECT_TRUE(sb.replaceAll("World", 0x4E16));
   EXPECT_EQ(9, sb.length());
   EXPECT_STREQ("\xe5\x97\xa8, \xe4\xb8\x96!", sb.text());
+}
+
+TEST(StringBuilder,ReplaceAllUCS4Search)
+{
   // Search for UCS4 character, replace with string
+  bool result;
+  StringBuilder sb(64, result);
+  EXPECT_TRUE(result);
+  EXPECT_TRUE(sb.append("\xe5\x97\xa8, \xe4\xb8\x96!"));
   EXPECT_TRUE(sb.replaceAll(0x55E8, "Hello"));
   EXPECT_TRUE(sb.replaceAll(0x4E16, "World"));
   EXPECT_EQ(13, sb.length());
   EXPECT_STREQ("Hello, World!", sb.text());
+}
 
+TEST(StringBuilder,ReplaceAllUCS4)
+{
   // Search for UCS4 character, replace with UCS4 character
-  sb.clear();
+  bool result;
+  StringBuilder sb(64, result);
+  EXPECT_TRUE(result);
   EXPECT_TRUE(sb.append("\xe5\xa5\xbd\xe5\xa4\xa9")); // 好天
   EXPECT_TRUE(sb.replaceAll(0x597D,0x574F)); // 坏天
   EXPECT_EQ(6, sb.length());
