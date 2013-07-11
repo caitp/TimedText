@@ -36,8 +36,8 @@ namespace TimedText
 StringBuilder::Data StringBuilder::empty = { 0, 0, { '\0' } };
 
 StringBuilder::StringBuilder()
+  : d(&empty)
 {
-  d = &empty;
 }
 
 StringBuilder::StringBuilder(int capacity, bool &result)
@@ -62,11 +62,13 @@ StringBuilder::reallocData(int alloc, bool grow)
 {
   if(grow)
     alloc = allocMore(alloc,sizeof(Data));
-  d = Data::allocate(d, alloc);
-  if(!d) {
-    d = &empty;
+  Data *x = Data::allocate(d, alloc);
+  if(!x) {
+    if(!d)
+      d = &empty;
     return false;
   }
+  d = x;
   return true;
 }
 
@@ -86,17 +88,21 @@ StringBuilder::resizeData(int size)
   return true;
 }
 
+// Private helper for text manipulation, which grows string and sets
+// a longer length than is actually asked for, for the benefit of
+// callers who know what they're doing. Hence, private.
 bool
 StringBuilder::expand(int i)
 {
   int x = d->length;
-  if(!resizeData(((i + 1) < x ? (i + 1) : x)))
+  if(!resizeData((maximum(i+1,x))))
     return false;
   if (d->length - 1 > x) {
     char *n = d->text + d->length - 1;
     char *e = d->text + x;
+    *n = '\0';
     while (n != e)
-     * --n = ' ';
+      *--n = ' ';
   }
   return true;
 }
@@ -143,6 +149,15 @@ StringBuilder::indexOf(const char *utf8, int len, int from) const
   }
 
   return String::findString(text(), length(), from, utf8, len);
+}
+
+int
+StringBuilder::indexOf(uint32 ucs4, int from) const
+{
+  char is[8]; 
+  int il;
+  Unicode::toUtf8(ucs4, is, il);
+  return indexOf(is, il, from);
 }
 
 bool StringBuilder::toString(String &result) const
@@ -237,35 +252,32 @@ StringBuilder::insert(int idx, uint32 ucs4)
 bool
 StringBuilder::insert(int i, const char *text, int len)
 {
+  if(!text)
+    return true;
+  if(len < 0)
+    len = ::strlen(text);
   if (i < 0 || len <= 0)
     return true;
 
-  int newLen = (d->length > i ? d->length : i) + len - 1;
-
-  // Grow if needed
-  if(!expand(newLen))
-    return false;
-
-  char buf[0x100] = "";
-  char *dynamic = 0;
-  const char *s = text;
-  if (s >= d->text && s < d->text + d->alloc) {
-    // Part of me - take a copy
-    if(len < 0x100)
-      s = buf;
-    else
-      if(!(s = (dynamic = static_cast<char *>(::malloc(len)))))
-        return false;
-    ::memcpy(dynamic ? dynamic : buf, text, len);
+  if (text >= d->text && text < d->text + d->alloc) {
+    // Text is inside the stringbuilder, we will need to
+    // store it in a temporary buffer
+    char *buffer = static_cast<char *>(::malloc(len));
+    if(!buffer)
+      return false;
+    ::memcpy(buffer, text, len);
+    bool result = insert(i, buffer, len);
+    ::free(buffer);
+    return result;
   }
 
-  ::memmove(d->text + i + len, d->text + i, (d->length - i + len));
-  ::memcpy(d->text + i, s, len);
-  d->length += len;
-  d->text[d->length] = '\0';
-  // If we had to allocate a temp buffer, delete it...
-  if(dynamic)
-    ::free(dynamic);
+  // Grow if needed
+  if(!expand(maximum(d->length, i) + len - 1))
+    return false;
+
+  ::memmove(d->text + i + len, d->text + i, (d->length - i - len));
+  ::memcpy(d->text + i, text, len);
+
   return true;
 }
 
@@ -273,6 +285,15 @@ bool
 StringBuilder::replaceAll(const char *search, int len,
                           const char *repl, int rlen)
 {
+  if(search) {
+    if(len < 0)
+      len = ::strlen(search);
+  } else
+    return true;
+  if(repl) {
+    if(rlen < 0)
+      rlen = ::strlen(repl);
+  }
   // Don't perform null ops
   if(d->length == 0) {
     if(len)
