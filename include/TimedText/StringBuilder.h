@@ -51,6 +51,7 @@ class StringBuilder
 public:
   StringBuilder();
   StringBuilder(int capacity, bool &result);
+  StringBuilder(const String &str, bool &result);
   ~StringBuilder();
 
   bool toString(String &result) const;
@@ -75,6 +76,9 @@ public:
 
   void clear();
 
+  // replace text with contents of string
+  bool setText(const String &string);
+
   char operator[](int i) const
   {
     if(i < 0)
@@ -90,53 +94,82 @@ public:
   }
 
   bool reserve(int capacity);
-  bool append(unsigned long ucs4);
+  bool append(uint32 ucs4);
   bool append(const char *text, int len);
   inline bool append(const String &str) {
     return append(str.text(), str.length());
   }
-  template <size_t N>
+  template <int N>
   inline bool append(const char (&arr)[N]) {
-    if(N > 0 && arr[N-1] == '\0')
-      return append(arr, N-1);
-    return append(arr, N);
+    int n = N;
+    if(n > 0 && arr[n-1] == '\0')
+      --n;
+    return append(arr, n);
   }
   inline bool append(const StringBuilder &buf) {
     return append(buf.text(), buf.length());
   }
 
-  bool prepend(unsigned long ucs4);
-  bool prepend(const char *text, int len);
-  inline bool prepend(const String &str) {
-    return prepend(str.text(), str.length());
+  bool prepend(uint32 ucs4);
+  inline bool prepend(const char *text, int len) {
+    return insert(0, text, len);
   }
-  template <size_t N>
+  inline bool prepend(const String &str) {
+    return insert(0, str.text(), str.length());
+  }
+  template <int N>
   inline bool prepend(const char (&arr)[N]) {
-    return prepend(arr, N);
+    int n = N;
+    if(n > 0 && arr[n-1] == '\0')
+      --n;
+    return insert(0, arr, n);
   }
   inline bool prepend(const StringBuilder &buf) {
-    return prepend(buf.text(), buf.length());
+    return insert(0, buf.text(), buf.length());
   }
-  bool insert(int idx, unsigned long ucs4);
+  bool insert(int idx, uint32 ucs4);
   bool insert(int idx, const char *text, int len);
   inline bool insert(int idx, const String &str) {
     return insert(idx, str.text(), str.length());
   }
-  template <size_t N>
+  template <int N>
   inline bool insert(int idx, const char (&arr)[N]) {
-    return insert(idx, arr, N);
+    int n = N;
+    if(n > 0 && arr[n-1] == '\0')
+      --n;
+    return insert(idx, arr, n);
   }
   inline bool insert(int i, const StringBuilder &buf) {
     return insert(i, buf.text(), buf.length());
   }
-  bool replaceAll(const char *search, int len,
-                  const char *repl, int rlen);
-  bool replaceAll(const char *search, int len,
-                  unsigned long replace);
-  bool replaceAll(unsigned long search,
-                  const char *replace, int rlen);
-  bool replaceAll(unsigned long search,
-                  unsigned long replace);
+  bool replaceAll(const char *search, int len, const char *repl, int rlen);
+  bool replaceAll(const char *search, int len, uint32 replace);
+  bool replaceAll(uint32 search, const char *replace, int rlen);
+  bool replaceAll(uint32 search, uint32 replace);
+  template <int N>
+  inline bool replaceAll(const char (&search)[N], uint32 replace) {
+    int n = N;
+    if(n > 0 && search[n-1] == '\0')
+      --n;
+    return replaceAll(search, n, replace);
+  }
+  template <int N>
+  inline bool replaceAll(uint32 search, const char (&replace)[N]) {
+    int n = N;
+    if(n > 0 && replace[n-1] == '\0')
+      --n;
+    return replaceAll(search, replace, n);
+  }
+  template <int N, int M>
+  inline bool replaceAll(const char (&search)[N], const char (&replace)[M]) {
+    int n = N;
+    int m = M;
+    if(n > 0 && search[n-1] == '\0')
+      --n;
+    if(m > 0 && replace[m-1] == '\0')
+      --m;
+    return replaceAll(search, n, replace, m);
+  }
 
   void removeTrailingChar();
 
@@ -150,7 +183,10 @@ private:
   };
   Data *d;
   bool reallocData(int alloc, bool grow = false);
+  bool resizeData(int size);
   void freeData();
+  bool replaceHelper(unsigned *, int, int, const char *, int);
+  bool expand(int i);
 
   static Data empty;
 };

@@ -35,14 +35,14 @@ TEST(SynchronousBuffer,RefillValidUtf8)
   buffer.finish();
   EXPECT_TRUE(buffer.eof());
   EXPECT_TRUE(buffer.refill("Phnglui mglw nafh Cthulhu R'lyeh "
-  	                        "wgah nagl fhtagn", 49));
+                            "wgah nagl fhtagn", 49));
   EXPECT_STREQ("Phnglui mglw nafh Cthulhu R'lyeh "
-  	           "wgah nagl fhtagn", buffer.curr());
+               "wgah nagl fhtagn", buffer.curr());
 }
 
 TEST(SynchronousBuffer,SeekAbsolute)
 {
-	SynchronousBuffer buffer;
+  SynchronousBuffer buffer;
   EXPECT_TRUE(buffer.refill("Phnglui mglw nafh Cthulhu R'lyeh "
                             "wgah nagl fhtagn"));
   buffer.seek(18, true);

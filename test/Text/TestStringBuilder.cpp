@@ -33,7 +33,7 @@ using namespace TimedText;
 // with the default constructor.
 TEST(StringBuilder,InitializeEmpty)
 {
-	StringBuilder sb;
+  StringBuilder sb;
   EXPECT_EQ(&StringBuilder::empty, sb.d);
 }
 

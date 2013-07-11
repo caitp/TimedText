@@ -136,12 +136,12 @@ Format
 detectFormat(const char *buffer, int len)
 {
   int pos = 0;
-	if(!buffer)
-		return FormatUnknown;
-	if(len < 0)
-		len = ::strlen(buffer);
-	if(len == 0)
-		return FormatUnknown;
+  if(!buffer)
+    return FormatUnknown;
+  if(len < 0)
+    len = ::strlen(buffer);
+  if(len == 0)
+    return FormatUnknown;
 
   if(sniffBufferForWebVTT(buffer, pos, len))
     return FormatWebVTT;

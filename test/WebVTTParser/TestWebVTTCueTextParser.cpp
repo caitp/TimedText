@@ -32,7 +32,7 @@ using namespace TimedText;
 bool
 parseCuetext(const char *text, Node &result)
 {
-	String cuetext(text,-1);
+  String cuetext(text,-1);
   return WebVTTParser::cuetextToNodes(cuetext, result);
 }
 

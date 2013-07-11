@@ -32,7 +32,7 @@ from waflib.Build import BuildContext
 APPNAME="timedtext"
 VERSION="0.1"
 
-SUBDIRS=["src","test","include"]
+SUBDIRS=["src","demos","test","include"]
 
 def options(ctx):
 	ctx.load("compiler_cxx compiler_c waf_unit_test xcode msvs make eclipse")
