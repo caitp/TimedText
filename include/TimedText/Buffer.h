@@ -67,7 +67,7 @@ public:
   // Put buffer thread to sleep (should wake from sleep after refilling)
   virtual void sleep() = 0;
 
-	inline bool eof() const
+  inline bool eof() const
   {
     return (i >= buffer.size() && final);
   }

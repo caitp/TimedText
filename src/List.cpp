@@ -120,8 +120,8 @@ ListData::detach_grow(int *i, int n) {
 
 bool
 ListData::realloc(int alloc) {
-	if(d->ref != 1)
-		return false;
+  if(d->ref != 1)
+    return false;
   Data *x = static_cast<Data *>(::realloc(d, DataHeaderSize + alloc * sizeof(void *) ) );
   if(!x)
     return false;
@@ -307,6 +307,12 @@ void
 ListData::undo_push()
 {
   --d->end;
+}
+
+void
+ListData::undo_push(int n)
+{
+  d->end -= n;
 }
 
 void

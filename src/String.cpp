@@ -420,7 +420,7 @@ String::findString(const char *bucket0, int bucketLen, int from,
   return -1;
 }
 
-static void
+void
 bm_init_skiptable(const char *uc, int len, unsigned char *skiptable)
 
 {
@@ -433,7 +433,7 @@ bm_init_skiptable(const char *uc, int len, unsigned char *skiptable)
   }
 }
 
-static inline int
+int
 bm_find(const char *uc, unsigned int l, int index,
         const char *puc, unsigned int pl,
         const unsigned char *skiptable)
@@ -480,6 +480,26 @@ String::findStringBoyerMoore(const char *bucket, int bucketLen, int from,
 
   return bm_find(bucket, bucketLen, from,
                  needle, needleLen, skiptable);
+}
+
+StringMatcher::StringMatcher(const char *str, int len)
+{
+  search = str;
+  searchLen = len;
+  bm_init_skiptable(str, len, skiptable);
+}
+
+StringMatcher::~StringMatcher()
+{
+
+}
+
+int
+StringMatcher::findIn(const char *str, int len, int from)
+{
+  if(from < 0)
+    from = 0;
+  return bm_find(str, len, from, search, searchLen, skiptable);
 }
 
 }

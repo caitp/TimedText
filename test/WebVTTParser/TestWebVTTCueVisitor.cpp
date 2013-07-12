@@ -42,7 +42,7 @@ static const char webvttCue1Level[] =
 
 TEST(WebVTTCueVisitor,SingleLevel)
 {
-	class Visitor : public NodeVisitor
+  class Visitor : public NodeVisitor
   {
   public:
     Visitor() : visited(0) {}

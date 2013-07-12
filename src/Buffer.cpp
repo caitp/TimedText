@@ -91,7 +91,7 @@ Buffer::refill(const char utf8[], int count, bool final)
   bool result;
   lock();
   this->final = final;
-	result = buffer.append(utf8,count);
+  result = buffer.append(utf8,count);
   unlock();
   return result;
 }
