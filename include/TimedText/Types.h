@@ -152,6 +152,20 @@ template<> struct UintForSize<8>{ typedef uint64 type; };
 typedef IntForSize<sizeof(void *)>::type ptrdiff;
 typedef UintForSize<sizeof(void *)>::type uintptr;
 
+template <typename T>
+inline T minimum(const T &a, const T &b) {
+  if(a < b)
+    return a;
+  return b;
+}
+
+template <typename T>
+inline T maximum(const T &a, const T &b) {
+  if(a < b)
+    return b;
+  return a;
+}
+
 }
 
 #endif // __TimedText_Types__

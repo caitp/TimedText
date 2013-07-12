@@ -36,14 +36,20 @@ namespace TimedText
 StringBuilder::Data StringBuilder::empty = { 0, 0, { '\0' } };
 
 StringBuilder::StringBuilder()
+  : d(&empty)
 {
-  d = &empty;
 }
 
 StringBuilder::StringBuilder(int capacity, bool &result)
   : d(&empty)
 {
   result = reallocData(capacity, true);
+}
+
+StringBuilder::StringBuilder(const String &str, bool &result)
+  : d(&empty)
+{
+  result = setText(str);
 }
 
 StringBuilder::~StringBuilder()
@@ -56,10 +62,47 @@ StringBuilder::reallocData(int alloc, bool grow)
 {
   if(grow)
     alloc = allocMore(alloc,sizeof(Data));
-  d = Data::allocate(!d || d==&empty ? 0 : d, alloc);
-  if(!d) {
-    d = &empty;
+  Data *x = Data::allocate(d, alloc);
+  if(!x) {
+    if(!d)
+      d = &empty;
     return false;
+  }
+  d = x;
+  return true;
+}
+
+bool
+StringBuilder::resizeData(int size)
+{
+  if(size < 0)
+    size = 0;
+
+  if(size > d->alloc || (!size < d->length && size < d->alloc >> 1))
+      if(!reallocData(size, true))
+        return false;
+  if (d->alloc >= size) {
+    d->length = size;
+    d->text[size] = '\0';
+  }
+  return true;
+}
+
+// Private helper for text manipulation, which grows string and sets
+// a longer length than is actually asked for, for the benefit of
+// callers who know what they're doing. Hence, private.
+bool
+StringBuilder::expand(int i)
+{
+  int x = d->length;
+  if(!resizeData((maximum(i+1,x))))
+    return false;
+  if (d->length - 1 > x) {
+    char *n = d->text + d->length - 1;
+    char *e = d->text + x;
+    *n = '\0';
+    while (n != e)
+      *--n = ' ';
   }
   return true;
 }
@@ -108,6 +151,15 @@ StringBuilder::indexOf(const char *utf8, int len, int from) const
   return String::findString(text(), length(), from, utf8, len);
 }
 
+int
+StringBuilder::indexOf(uint32 ucs4, int from) const
+{
+  char is[8]; 
+  int il;
+  Unicode::toUtf8(ucs4, is, il);
+  return indexOf(is, il, from);
+}
+
 bool StringBuilder::toString(String &result) const
 {
   result = String(d->text,d->length);
@@ -122,13 +174,36 @@ StringBuilder::clear()
 }
 
 bool
+StringBuilder::setText(const String &string)
+{
+  int size = string.size();
+  const char *text = string.text();
+  if(!size) {
+    clear();
+    return true;
+  }
+
+  if(size >= d->alloc)
+    if(!reallocData(size))
+      return false;
+
+  d->text[size] = '\0';
+  ::memcpy(d->text, text, size);
+
+  d->length = size;
+  d->text[size] = '\0';
+
+  return true;
+}
+
+bool
 StringBuilder::reserve(int capacity)
 {
   return reallocData(capacity);
 }
 
 bool
-StringBuilder::append(unsigned long ucs4)
+StringBuilder::append(uint32 ucs4)
 {
   char is[8]; 
   int il;
@@ -157,22 +232,16 @@ StringBuilder::append(const char *utf8, int len)
 }
   
 bool
-StringBuilder::prepend(unsigned long ucs4)
+StringBuilder::prepend(uint32 ucs4)
 {
   char is[8]; 
   int il;
   Unicode::toUtf8(ucs4, is, il);
-  return prepend(is, il);
+  return insert(0, is, il);
 }
 
 bool
-StringBuilder::prepend(const char *text, int len)
-{
-  return false;
-}
-  
-bool
-StringBuilder::insert(int idx, unsigned long ucs4)
+StringBuilder::insert(int idx, uint32 ucs4)
 {
   char is[8]; 
   int il;
@@ -181,21 +250,148 @@ StringBuilder::insert(int idx, unsigned long ucs4)
 }
 
 bool
-StringBuilder::insert(int idx, const char *text, int len)
+StringBuilder::insert(int i, const char *text, int len)
 {
-  return false;
+  if(!text)
+    return true;
+  if(len < 0)
+    len = ::strlen(text);
+  if (i < 0 || len <= 0)
+    return true;
+
+  if (text >= d->text && text < d->text + d->alloc) {
+    // Text is inside the stringbuilder, we will need to
+    // store it in a temporary buffer
+    char *buffer = static_cast<char *>(::malloc(len));
+    if(!buffer)
+      return false;
+    ::memcpy(buffer, text, len);
+    bool result = insert(i, buffer, len);
+    ::free(buffer);
+    return result;
+  }
+
+  // Grow if needed
+  if(!expand(maximum(d->length, i) + len - 1))
+    return false;
+
+  ::memmove(d->text + i + len, d->text + i, (d->length - i - len));
+  ::memcpy(d->text + i, text, len);
+
+  return true;
 }
 
 bool
 StringBuilder::replaceAll(const char *search, int len,
                           const char *repl, int rlen)
 {
-  return false;
+  if(search) {
+    if(len < 0)
+      len = ::strlen(search);
+  } else
+    return true;
+  if(repl) {
+    if(rlen < 0)
+      rlen = ::strlen(repl);
+  }
+  // Don't perform null ops
+  if(d->length == 0) {
+    if(len)
+      return true;
+  } else {
+    if(search == repl && len == rlen)
+      return true;
+  }
+
+  StringMatcher matcher(search, len);
+
+  int i = 0;
+
+  for(;;) {
+    unsigned indices[1024];
+    unsigned pos = 0;
+    while(pos < 1023) {
+      i = matcher.findIn(d->text, d->length, i);
+      if(i == -1)
+        break;
+      indices[pos++] = i;
+      i += len;
+      if(!i)
+        ++i;
+    }
+    if(!pos)
+      break;
+
+    // Die if we have an allocation failure
+    if(!replaceHelper(indices, pos, len, repl, rlen))
+      return false;
+
+    if(i == -1)
+      break;
+    i += pos*(rlen - len);
+  }
+
+  return true;
+}
+
+bool
+StringBuilder::replaceHelper(unsigned *indices, int n, int len,
+                             const char *repl, int rlen)
+{
+  if(len == rlen) {
+    // Fastest case -- no allocation changes needed
+    for (int i = 0; i < n; ++i)
+      memcpy(d->text + indices[i], repl, rlen);
+  } else if(rlen < len) {
+    // Second fastest case, no need to resize buffer
+    unsigned to = indices[0];
+    if(rlen)
+      ::memcpy(d->text + to, repl, rlen);
+    to += rlen;
+    unsigned from = indices[0] + len;
+    for(int i=1; i<n; ++i) {
+      int size = int(indices[i] - from);
+      if(size > 0) {
+        // Close the distance between the replacement text and the
+        // rest of the buffer
+        ::memmove(d->text + to, d->text + from, size);
+        to += size;
+      }
+      if(rlen) {
+        // Copy in the replacement text
+        ::memcpy(d->text + to, repl, rlen);
+        to += rlen;
+      }
+      from = indices[i] + len;
+    }
+    int size = d->length - from;
+    if(size > 0)
+      ::memmove(d->text + to, d->text + from, size);
+    if(!resizeData(d->length-(n*(len-rlen))))
+      return false;
+  } else {
+    // Worst case, replace from back
+    int adjust = n*(rlen-len);
+    int nlen = d->length + adjust;
+    int end = d->length;
+    if(!resizeData(nlen))
+      return false;
+    while (n) {
+      --n;
+      int from = int(indices[n] + len);
+      int start = indices[n] + n*(rlen-len);
+      int to = start + rlen;
+      ::memmove(d->text + to, d->text + from, (end - from));
+      ::memcpy(d->text + start, repl, rlen);
+      end = from-len;
+    }
+  }
+  return true;
 }
 
 bool
 StringBuilder::replaceAll(const char *search, int len,
-                          unsigned long replace)
+                          uint32 replace)
 {
   char ur[8];
   int rl;
@@ -204,7 +400,7 @@ StringBuilder::replaceAll(const char *search, int len,
 }
 
 bool
-StringBuilder::replaceAll(unsigned long search,
+StringBuilder::replaceAll(uint32 search,
                           const char *replace, int rlen)
 {
   char us[8];
@@ -214,8 +410,8 @@ StringBuilder::replaceAll(unsigned long search,
 }
 
 bool
-StringBuilder::replaceAll(unsigned long search,
-                          unsigned long replace)
+StringBuilder::replaceAll(uint32 search,
+                          uint32 replace)
 {
   char us[8], ur[8];
   int sl, rl;

@@ -41,6 +41,23 @@ struct String::Data
   char text[1];
 };
 
+// Private class used within the library by the String and StringBuilder
+class StringMatcher
+{
+public:
+  StringMatcher(const char *str, int len);
+  ~StringMatcher();
+
+  int findIn(const char *str, int len, int from = 0);
+  inline int findIn(const String &str, int from = 0) {
+    return findIn(str.text(), str.length(), from);
+  }
+private:
+  const char *search;
+  int searchLen;
+  unsigned char skiptable[256];
+};
+
 } // TimedText
 
 #endif // __TimedText_StringData__

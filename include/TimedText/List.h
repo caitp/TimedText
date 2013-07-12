@@ -66,6 +66,9 @@ struct ListData
   Data *detach_grow(int *i, int n);
   bool realloc(int alloc);
   void **erase(void **xi);
+  inline void **append(const ListData &other) {
+    return append(size());
+  }
   void **append(int n);
   void **append();
   void **insert(int i);
@@ -87,6 +90,7 @@ struct ListData
   void kill();
   void undo_unshift();
   void undo_push();
+  void undo_push(int n);
 };
 
 template <typename T>
@@ -120,6 +124,23 @@ public:
     if(d && !p.deref()) {
       freeData(d);
     }
+  }
+
+  List<T> &operator+=(const List<T> &other)
+  {
+    if(!other.isEmpty()) {
+      if(isEmpty())
+        *this = other;
+      else {
+        Node *n = p.unique()
+                ? detachHelperGrow(INT_MAX, other.size())
+                : reinterpret_cast<Node *>(p.append(other.p));
+        if(!nodeCopy(n, reinterpret_cast<Node *>(p.end()),
+                     reinterpret_cast<Node *>(other.p.begin())))
+          p.undo_push(int(reinterpret_cast<Node *>(p.end()) - n));
+      }
+    }
+    return *this;
   }
 
   void clear() { *this = List<T>(); }
@@ -278,6 +299,12 @@ public:
     return true;
   }
 
+  inline bool shift() {
+    if(!p.size())
+      return false;
+    removeFirst();
+    return true;
+  }
   // Take from beginning or end
   inline bool shift(T &result) {
     if(!p.size())
@@ -287,6 +314,12 @@ public:
     return true;
   }
 
+  inline bool pop() {
+    if(!p.size())
+      return false;
+    removeLast();
+    return true;
+  }
   inline bool pop(T &result) {
     if(!p.size())
       return false;

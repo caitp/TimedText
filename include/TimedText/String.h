@@ -45,15 +45,15 @@ class String
 public:
   struct Data;
   String();
-	explicit String(const char *utf8, int len=-1);
+  explicit String(const char *utf8, int len=-1);
   ~String();
   String(Data &d);
-	String(const String &str);
-	String &operator=(const String &str);
+  String(const String &str);
+  String &operator=(const String &str);
   String &operator+=(const String &str);
 
-	// Returns true if the string is empty or NULL.
-	inline bool isEmpty() const {
+  // Returns true if the string is empty or NULL.
+  inline bool isEmpty() const {
     return length() == 0;
   }
 
@@ -65,7 +65,7 @@ public:
     return length();
   }
 
-	const char *text() const;
+  const char *text() const;
 
   inline operator const char *() const {
     return text();

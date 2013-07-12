@@ -139,7 +139,7 @@ WebVTTTokenizer::~WebVTTTokenizer()
 void
 WebVTTTokenizer::reset()
 {
-	if(token)
+  if(token)
     token->reset();
   _state = WebVTTTokenizerState::DataState;
 }
